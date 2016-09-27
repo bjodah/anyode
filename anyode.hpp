@@ -31,6 +31,14 @@ namespace AnyODE {
             ignore(t); ignore(y); ignore(fy); ignore(jac); ignore(ldim);
             return Status::unrecoverable_error;
         }
+        virtual Status dense_jac_rmaj(double t,
+                                    const double * const __restrict__ y,
+                                    const double * const __restrict__ fy,
+                                    double * const __restrict__ jac,
+                                    long int ldim){
+            ignore(t); ignore(y); ignore(fy); ignore(jac); ignore(ldim);
+            return Status::unrecoverable_error;
+        }
         virtual Status banded_jac_cmaj(double t,
                                        const double * const __restrict__ y,
                                        const double * const __restrict__ fy,
