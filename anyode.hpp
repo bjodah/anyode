@@ -1,7 +1,10 @@
 #ifdef ANYODE_HPP_D47BAD58870311E6B95F2F58DEFE6E37
+
 #if ANYODE_HPP_D47BAD58870311E6B95F2F58DEFE6E37 != 2
 #error "Multiple anyode.hpp files included with version mismatch"
 #endif
+
+#else
 #define ANYODE_HPP_D47BAD58870311E6B95F2F58DEFE6E37 2
 
 
