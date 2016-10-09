@@ -107,5 +107,6 @@ namespace AnyODE {
             return Status::unrecoverable_error;
         }
     };
+
 }
 #endif /* ANYODE_HPP_D47BAD58870311E6B95F2F58DEFE6E37 */
