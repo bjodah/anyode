@@ -19,6 +19,7 @@ namespace AnyODE {
     struct OdeSysBase {
         void * integrator = nullptr;
         std::unordered_map<std::string, int> last_integration_info;
+        std::unordered_map<std::string, double> last_integration_info_dbl;
 
         virtual ~OdeSysBase() {}
         virtual int get_ny() const = 0;

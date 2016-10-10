@@ -35,4 +35,4 @@ cdef class EulerForward:
         yout = np.empty((tout.size, y0.size))
         yout[0, :] = y0
         self.thisptr.integrate(&tout[0], tout.size, &yout[0, 0])
-        return yout
+        return yout, self.odesys.last_integration_info_dbl[b'time_wall']

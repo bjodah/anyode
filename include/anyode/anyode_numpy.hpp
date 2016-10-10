@@ -8,8 +8,8 @@
 namespace AnyODE {
     struct PyOdeSys : public AnyODE::OdeSysBase {
         int ny, mlower=-1, mupper=-1, nroots=0;
-        PyObject *py_rhs, *py_kwargs, *py_roots, *py_jac;
-        unsigned nfev, njev;
+        PyObject *py_rhs, *py_jac, *py_roots, *py_kwargs;
+        unsigned nfev=0, njev=0;
         PyOdeSys(int ny, PyObject * py_rhs, PyObject * py_jac=nullptr, PyObject * py_roots=nullptr, PyObject * py_kwargs=nullptr) :
             ny(ny), py_rhs(py_rhs), py_jac(py_jac), py_roots(py_roots), py_kwargs(py_kwargs) {
             if (py_rhs == nullptr)
