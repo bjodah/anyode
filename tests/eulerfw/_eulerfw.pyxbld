@@ -1,0 +1,7 @@
+def make_ext(modname, pyxfilename):
+    from setuptools import Extension
+    from Cython.Build import cythonize
+    ext = Extension(name=modname, sources=[pyxfilename], include_dirs=['.', '../../include']
+                    #, language='c++', extra_compile_args=['-std=c++11']
+    )
+    return cythonize([ext], include_path=['../../cython_def'])[0]
