@@ -2,3 +2,4 @@ build:
   image: bjodah/bjodahimg16:v1.2
   commands:
     - cd tests/eulerfw; python -m pytest; cd -
+    - cd tests/svd; make; cd -
