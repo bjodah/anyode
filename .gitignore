@@ -5,3 +5,4 @@ tests/eulerfw/_eulerfw.pyxbldc
 **/catch.hpp
 tests/svd/test_svd
 tests/svd/test_svd_ndebug
+**.cache/

@@ -18,8 +18,10 @@ def sine(t, y, fout, Ak=None):
 def test_sine():
     A, k = [2, 3]
     ef = EulerForward(2, sine, dict(Ak=[A, k]))
+    assert ef.get_ny() == 2
     tout = np.linspace(0, 4, 8192)
     y0 = np.array([0., A*k])
+    assert ef.get_dx0(0, y0) == 0.0
     yout, time_wall = ef.integrate(tout, y0)
     yref0 = A*np.sin(k*tout)
     yref1 = A*np.cos(k*tout)*k
