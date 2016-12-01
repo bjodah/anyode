@@ -18,9 +18,9 @@ cdef class EulerForward:
     cdef Integrator * thisptr
     cdef PyOdeSys * odesys
 
-    def __cinit__(self, int ny, f, cb_kwargs=None, roots=None, jac=None):
+    def __cinit__(self, int ny, f, cb_kwargs=None, roots=None, jac=None, dx0cb=None):
         self.odesys = new PyOdeSys(
-            ny, <PyObject *>f, <PyObject *>jac, <PyObject *>roots, <PyObject *>cb_kwargs, -1, -1, 0)
+            ny, <PyObject *>f, <PyObject *>jac, <PyObject *>roots, <PyObject *>cb_kwargs, -1, -1, 0, <PyObject *>dx0cb)
         self.thisptr = new Integrator(<OdeSysBase*>self.odesys)
 
     def __dealloc__(self):
@@ -37,3 +37,9 @@ cdef class EulerForward:
         yout[0, :] = y0
         self.thisptr.integrate(&tout[0], tout.size, &yout[0, 0])
         return yout, self.odesys.last_integration_info_dbl[b'time_wall']
+
+    def get_ny(self):
+        return self.odesys.get_ny()
+
+    def get_dx0(self, double t, cnp.ndarray[cnp.float64_t, ndim=1, mode='c'] y):
+        return self.odesys.get_dx0(t, &y[0])

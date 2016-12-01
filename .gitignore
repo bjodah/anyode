@@ -2,3 +2,7 @@ tests/eulerfw/_eulerfw.cpp
 
 tests/eulerfw/_eulerfw.pyxbldc
 **.pyc
+**/catch.hpp
+tests/svd/test_svd
+tests/svd/test_svd_ndebug
+**.cache/
