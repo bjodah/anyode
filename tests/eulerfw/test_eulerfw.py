@@ -22,6 +22,7 @@ def test_sine():
     tout = np.linspace(0, 4, 8192)
     y0 = np.array([0., A*k])
     assert ef.get_dx0(0, y0) == 0.0
+    assert ef.get_dx_max(0, y0) == float('inf')
     yout, time_wall = ef.integrate(tout, y0)
     yref0 = A*np.sin(k*tout)
     yref1 = A*np.cos(k*tout)*k
