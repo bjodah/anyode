@@ -18,9 +18,9 @@ cdef class EulerForward:
     cdef Integrator * thisptr
     cdef PyOdeSys * odesys
 
-    def __cinit__(self, int ny, f, cb_kwargs=None, roots=None, jac=None, dx0cb=None):
+    def __cinit__(self, int ny, f, cb_kwargs=None, roots=None, jac=None, dx0cb=None, dx_max_cb=None):
         self.odesys = new PyOdeSys(
-            ny, <PyObject *>f, <PyObject *>jac, <PyObject *>roots, <PyObject *>cb_kwargs, -1, -1, 0, <PyObject *>dx0cb)
+            ny, <PyObject *>f, <PyObject *>jac, <PyObject *>roots, <PyObject *>cb_kwargs, -1, -1, 0, <PyObject *>dx0cb, <PyObject *>dx_max_cb)
         self.thisptr = new Integrator(<OdeSysBase*>self.odesys)
 
     def __dealloc__(self):

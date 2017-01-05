@@ -17,6 +17,8 @@ namespace AnyODE {
         {
             if (py_rhs == nullptr)
                 throw std::runtime_error("py_rhs must not be nullptr");
+            if (py_dx_max_cb != nullptr and py_dx_max_cb != Py_None)
+                this->use_get_dx_max = true;
             Py_INCREF(py_rhs);
             Py_XINCREF(py_jac);
             Py_XINCREF(py_roots);
