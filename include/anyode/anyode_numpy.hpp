@@ -6,7 +6,7 @@
 #include <anyode/anyode.hpp>
 
 namespace AnyODE {
-    struct PyOdeSys : public AnyODE::OdeSysBase {
+    struct PyOdeSys : public AnyODE::OdeSysBase<double> {
         int ny;
         PyObject *py_rhs, *py_jac, *py_roots, *py_kwargs, *py_dx0cb, *py_dx_max_cb;
         int mlower, mupper, nroots;

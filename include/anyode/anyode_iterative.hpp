@@ -11,7 +11,7 @@
 
 namespace AnyODE {
 
-    struct OdeSysIterativeBase : public OdeSysBase {
+    struct OdeSysIterativeBase : public OdeSysBase<double> {
         int njacvec_dot=0, nprec_setup=0, nprec_solve=0;
         std::unique_ptr<MatrixView> m_jac_cache {nullptr};
         std::unique_ptr<MatrixView> m_prec_cache {nullptr};
