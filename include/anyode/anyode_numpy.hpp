@@ -1,5 +1,4 @@
-#ifndef ANYODE_NUMPY_HPP_363685EE8DA911E6879C8F3B030A9DA7
-#define ANYODE_NUMPY_HPP_363685EE8DA911E6879C8F3B030A9DA7
+#pragma once
 
 #include <Python.h>
 #include <numpy/arrayobject.h>
@@ -212,6 +211,3 @@ namespace AnyODE {
         }
     };
 }
-
-
-#endif /* ANYODE_NUMPY_HPP_363685EE8DA911E6879C8F3B030A9DA7 */

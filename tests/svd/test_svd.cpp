@@ -16,12 +16,12 @@ TEST_CASE( "solve", "[SVD]" ) {
         0,0,0,5,9,7,0,0
     }};
     bool colmaj = true;
-    AnyODE::DenseMatrixView dmv {&data[0], n, n, ld, colmaj};
+    AnyODE::DenseMatrixView<double> dmv {&data[0], n, n, ld, colmaj};
     std::array<double, n> xref {{-7, 13, 9, -4, -0.7, 42}};
     std::array<double, n> x;
     std::array<double, n> b;
     dmv.dot_vec(&xref[0], &b[0]);
-    auto decomp = AnyODE::SVD(&dmv);
+    auto decomp = AnyODE::SVD<double>(&dmv);
     REQUIRE( decomp.m_info == 0 );
     int flag = decomp.solve(&b[0], &x[0]);
     REQUIRE( flag == 0 );
