@@ -13,6 +13,46 @@ namespace AnyODE {
         virtual int solve(const Real_t * const, Real_t * const) = 0;
     };
 
+    template <typename Real_t> struct LU_callbacks;
+    template<typename Real_t = double>
+    struct DenseLU : public DecompositionBase<Real_t> {
+        DenseLU_callbacks<Real_t> m_cbs;
+        DenseMatrixView<Real_t> * m_view;
+        buffer_t<int> m_ipiv;
+        int m_info;
+        DenseLU(DenseMatrixView<Real_t> * view) :
+            m_view(view),
+            m_ipiv(buffer_factory<int>(view->m_nr))
+        {
+            m_info = factorize();
+        }
+        int factorize() override final {
+            int info;
+            m_cbs.m_getrf(&(m_view->m_nr), &(m_view->m_nc), m_view->m_data, &(m_view->m_ld),
+                          &m_ipiv, &info);
+            return info
+        }
+        int solve(const Real_t * const b, Real_t * const x) override final {
+            char trans = 'N';
+            int nrhs = 1;
+            int info;
+            std::copy(b, b + m_view->m_nr, x);
+            m_cbs.m_getrs(&trans, &(m_view->m_nr), &nrhs, m_view->m_data, &(m_view->m_ld),
+                          buffer_get_raw_ptr(m_ipiv), x, &(m_view->m_nr), &info);
+            return info;
+        }
+    };
+    template <> struct DenseLU_callbacks<float>{
+        static constexpr auto m_getrf = sgetrf_;
+        static constexpr auto m_getrs = sgetrs_;
+    };
+    template <> struct DenseLU_callbacks<double> {
+        static constexpr auto m_getrf = dgetrf_;
+        static constexpr auto m_getrs = dgetrs_;
+    };
+
+
+
     template <typename Real_t> struct SVD_callbacks;
 
     template<typename Real_t = double>
@@ -44,7 +84,7 @@ namespace AnyODE {
             m_work = buffer_factory<Real_t>(m_lwork);
             m_info = factorize();
         }
-        int factorize() override{
+        int factorize() override final {
             int info;
             char mode = 'A';
             m_cbs.m_gesvd(&mode, &mode, &(m_view->m_nr), &(m_view->m_nc), m_view->m_data, &(m_view->m_ld),
@@ -54,7 +94,7 @@ namespace AnyODE {
             m_condition_number = std::fabs(m_s[0]/m_s[std::min(m_view->m_nr, m_view->m_nc) - 1]);
             return info;
         }
-        int solve(const Real_t* const b, Real_t * const x) override{
+        int solve(const Real_t* const b, Real_t * const x) override final {
             Real_t alpha=1, beta=0;
             int incx=1, incy=1;
             char trans = 'T';

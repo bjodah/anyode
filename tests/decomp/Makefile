@@ -6,13 +6,13 @@ DEFINES ?=
 
 .PHONY: test clean
 
-test: test_svd test_svd_ndebug
-	./test_svd --abortx 1
-	./test_svd_ndebug --abortx 1
+test: test_decomp test_decomp_ndebug
+	./test_decomp --abortx 1
+	./test_decomp_ndebug --abortx 1
 
 clean:
 	rm catch.hpp
-	rm test_svd
+	rm test_decomp
 
 test_%: test_%.cpp ../../include/anyode/anyode_decomposition.hpp catch.hpp
 	$(CXX) $(CXXFLAGS) $(INCLUDE) $(DEFINES) -g -ggdb -O0 -D_GLIBCXX_DEBUG -o $@ $< $(LIBS)
