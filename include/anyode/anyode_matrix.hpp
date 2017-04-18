@@ -1,7 +1,5 @@
 #pragma once
 
-
-
 namespace AnyODE {
 
     template<typename Real_t>
@@ -53,18 +51,19 @@ namespace AnyODE {
         }
     };
 
-    constexpr int banded_ld_(int kl, int ku) { return 2*kl+ku+1; }
+    constexpr int banded_padded_ld_(int kl, int ku) { return 2*kl+ku+1; }
 
     template<typename Real_t = double>
-    struct BandedMatrixView : public MatrixView<Real_t> {
+    struct BandedPaddedMatrixView : public MatrixView<Real_t> {
         int m_kl, m_ku;
         static constexpr bool m_colmaj = true;  // dgbmv takes a trans arg, but not used at the moment.
-        BandedMatrixView(Real_t * const data, int nr, int nc, int kl, int ku, int ld=0) :
-            MatrixView<Real_t>(data ? data : new Real_t[(ld ? ld : banded_ld_(kl, ku))*nc], nr, nc,
-                               ld ? ld : banded_ld_(kl, ku), data == nullptr)
+        BandedPaddedMatrixView(Real_t * const data, int nr, int nc, int kl, int ku, int ld=0) :
+            MatrixView<Real_t>(data ? data : new Real_t[(ld ? ld : banded_padded_ld_(kl, ku))*nc], nr, nc,
+                               ld ? ld : banded_padded_ld_(kl, ku), data == nullptr),
+            m_kl(kl), m_ku(ku)
         {}
         Real_t& operator()(int ri, int ci) override final {
-            return this->m_data[m_kl + m_ku + 1 + ri - ci + ci*this->m_ld];
+            return this->m_data[m_kl + m_ku + ri - ci + ci*this->m_ld]; // m_kl paddding
         }
         void dot_vec(const Real_t * const vec, Real_t * const out) override final {
             Real_t alpha=1, beta=0;
@@ -72,12 +71,12 @@ namespace AnyODE {
             const char trans='N';
             int sundials_dummy = 0;
             constexpr gbmv_callback<Real_t> gbmv{};
-            gbmv(&trans, &(this->m_nr), &(this->m_nc), &(m_kl), &(m_ku), &alpha, this->m_data, &(this->m_ld),
-                 const_cast<Real_t *>(vec), &inc, &beta, out, &inc, sundials_dummy);
+            gbmv(&trans, &(this->m_nr), &(this->m_nc), &(m_kl), &(m_ku), &alpha, this->m_data+m_kl,  // m_kl padding
+                 &(this->m_ld), const_cast<Real_t *>(vec), &inc, &beta, out, &inc, sundials_dummy);
         }
         void set_to_eye_plus_scaled_mtx(Real_t scale, MatrixView<Real_t>& other) override final {
-            for (int ri = 0; ri < this->m_nr; ++ri){
-                for (int ci = std::max(0, ri-m_kl); ci < std::min(this->m_nc, ri+m_ku+1); ++ci){
+            for (int ci = 0; ci < this->m_nc; ++ci){
+                for (int ri = std::max(0, ci-m_ku); ri < std::min(this->m_nr, ci+m_kl+1); ++ri){
                     (*this)(ri, ci) = scale*other(ri, ci) + ((ri == ci) ? 1 : 0);
                 }
             }

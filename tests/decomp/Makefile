@@ -8,7 +8,7 @@ DEFINES ?=
 
 .PHONY: test clean
 
-test: test_decomp test_decomp_ndebug
+test: test_decomp
 	./test_decomp --abortx 1
 
 clean:

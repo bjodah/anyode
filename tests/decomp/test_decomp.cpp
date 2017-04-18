@@ -62,6 +62,7 @@ TEST_CASE( "DenseLU_solve", "[DenseLU]" ) {
 TEST_CASE( "BandedLU_solve", "[BandedLU]" ) {
     constexpr int n = 6;
     constexpr int ld = 8;
+    constexpr int nd = 2;
     std::array<double, n*ld> data {{  // column major
         5,5,1,0,0,0,0,0,
         3,8,0,2,0,0,0,0,
@@ -71,18 +72,27 @@ TEST_CASE( "BandedLU_solve", "[BandedLU]" ) {
         0,0,0,5,9,7,0,0
     }};
     bool colmaj = true;
-    AnyODE::BandedMatrixView<double> bmv {nullptr, n, n, 2, 2};
-    REQUIRE(bmv.m_ld == 7);
+    AnyODE::BandedPaddedMatrixView<double> bpmv {nullptr, n, n, nd, nd};
+    REQUIRE(bpmv.m_ld == 3*nd+1);
+    REQUIRE(bpmv.m_kl == nd);
+    REQUIRE(bpmv.m_ku == nd);
+    REQUIRE(bpmv.m_nr == n);
+    REQUIRE(bpmv.m_nc == n);
     for (int ri=0; ri < n; ++ri){
-        for (int ci = std::max(0, ri-2); ci < std::min(n, ri+2+1); ++ci){
-            bmv(ri, ci) = data[ri*n + ci];
+        for (int ci = std::max(0, ri-nd); ci < std::min(n, ri+nd+1); ++ci){
+            bpmv(ri, ci) = data[ri*ld + ci];
         }
     }
     std::array<double, n> xref {{-7, 13, 9, -4, -0.7, 42}};
+    std::array<double, n> bref {{39. ,   75. ,   39.9,  227. ,  115.8,  267.7}};
     std::array<double, n> x;
     std::array<double, n> b;
-    bmv.dot_vec(&xref[0], &b[0]);
-    auto decomp = AnyODE::BandedLU<double>(&bmv);
+    bpmv.dot_vec(&xref[0], &b[0]);
+    for (int idx=0; idx<n; ++idx){
+        REQUIRE( std::abs((b[idx] - bref[idx])/2e-13) < 1 );
+
+    }
+    auto decomp = AnyODE::BandedLU<double>(&bpmv);
     REQUIRE( decomp.m_info == 0 );
     int flag = decomp.solve(&b[0], &x[0]);
     REQUIRE( flag == 0 );
