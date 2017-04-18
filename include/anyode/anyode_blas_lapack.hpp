@@ -42,33 +42,37 @@ extern "C" void sgbtrs_(const char* trans, int* n, int* kl, int* ku, int* nrhs, 
         }                                                          \
     };
 
-PROXY_DEFINE(gemv)
-PROXY_SPECIALIZATION(gemv, float, sgemv_)
-PROXY_SPECIALIZATION(gemv, double, dgemv_)
+namespace AnyODE {
 
-PROXY_DEFINE(gesvd)
-PROXY_SPECIALIZATION(gesvd, float, sgesvd_)
-PROXY_SPECIALIZATION(gesvd, double, dgesvd_)
+    PROXY_DEFINE(gemv)
+    PROXY_SPECIALIZATION(gemv, float, sgemv_)
+    PROXY_SPECIALIZATION(gemv, double, dgemv_)
 
-PROXY_DEFINE(getrf)
-PROXY_SPECIALIZATION(getrf, float, sgetrf_)
-PROXY_SPECIALIZATION(getrf, double, dgetrf_)
+    PROXY_DEFINE(gesvd)
+    PROXY_SPECIALIZATION(gesvd, float, sgesvd_)
+    PROXY_SPECIALIZATION(gesvd, double, dgesvd_)
 
-PROXY_DEFINE(getrs)
-PROXY_SPECIALIZATION(getrs, float, sgetrs_)
-PROXY_SPECIALIZATION(getrs, double, dgetrs_)
+    PROXY_DEFINE(getrf)
+    PROXY_SPECIALIZATION(getrf, float, sgetrf_)
+    PROXY_SPECIALIZATION(getrf, double, dgetrf_)
 
-PROXY_DEFINE(gbmv)
-PROXY_SPECIALIZATION(gbmv, float, sgbmv_)
-PROXY_SPECIALIZATION(gbmv, double, dgbmv_)
+    PROXY_DEFINE(getrs)
+    PROXY_SPECIALIZATION(getrs, float, sgetrs_)
+    PROXY_SPECIALIZATION(getrs, double, dgetrs_)
 
-PROXY_DEFINE(gbtrf)
-PROXY_SPECIALIZATION(gbtrf, float, sgbtrf_)
-PROXY_SPECIALIZATION(gbtrf, double, dgbtrf_)
+    PROXY_DEFINE(gbmv)
+    PROXY_SPECIALIZATION(gbmv, float, sgbmv_)
+    PROXY_SPECIALIZATION(gbmv, double, dgbmv_)
 
-PROXY_DEFINE(gbtrs)
-PROXY_SPECIALIZATION(gbtrs, float, sgbtrs_)
-PROXY_SPECIALIZATION(gbtrs, double, dgbtrs_)
+    PROXY_DEFINE(gbtrf)
+    PROXY_SPECIALIZATION(gbtrf, float, sgbtrf_)
+    PROXY_SPECIALIZATION(gbtrf, double, dgbtrf_)
+
+    PROXY_DEFINE(gbtrs)
+    PROXY_SPECIALIZATION(gbtrs, float, sgbtrs_)
+    PROXY_SPECIALIZATION(gbtrs, double, dgbtrs_)
+
+}
 
 #undef PROXY_DEFINE
 #undef PROXY_SPECIALIZATION
