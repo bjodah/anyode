@@ -1,5 +1,7 @@
 #pragma once
 
+
+
 namespace AnyODE {
 
     template<typename Real_t>
@@ -19,27 +21,28 @@ namespace AnyODE {
     };
 
     template<typename Real_t = double>
-    struct DenseMatrixView : MatrixView<Real_t> {
+    struct DenseMatrixView : public MatrixView<Real_t> {
         bool m_colmaj;
         DenseMatrixView(Real_t * const data, int nr, int nc, int ld, bool colmaj) :
             MatrixView<Real_t>(data ? data : new Real_t[ld*(colmaj ? nc : nr)],
                                nr, nc, ld, data == nullptr),
             m_colmaj(colmaj)
         {}
-        virtual Real_t& operator()(int ri, int ci) override {
+        Real_t& operator()(int ri, int ci) override final {
             const int imaj = m_colmaj ? ci : ri;
             const int imin = m_colmaj ? ri : ci;
             return this->m_data[imaj*this->m_ld + imin];
         }
-        virtual void dot_vec(const Real_t * const vec, Real_t * const out) override {
+        void dot_vec(const Real_t * const vec, Real_t * const out) override final {
             Real_t alpha=1, beta=0;
             int inc=1;
             char trans= m_colmaj ? 'N' : 'T';
             int sundials_dummy = 0;
-            dgemv_(&trans, &(this->m_nr), &(this->m_nc), &alpha, this->m_data, &(this->m_ld), const_cast<Real_t *>(vec),
-                   &inc, &beta, out, &inc, sundials_dummy);
+            constexpr gemv_callback<Real_t> gemv{};
+            gemv(&trans, &(this->m_nr), &(this->m_nc), &alpha, this->m_data, &(this->m_ld),
+                 const_cast<Real_t *>(vec), &inc, &beta, out, &inc, sundials_dummy);
         }
-        virtual void set_to_eye_plus_scaled_mtx(Real_t scale, MatrixView<Real_t>& other) override {
+        void set_to_eye_plus_scaled_mtx(Real_t scale, MatrixView<Real_t>& other) override final {
             for (int imaj = 0; imaj < (m_colmaj ? this->m_nc : this->m_nr); ++imaj){
                 for (int imin = 0; imin < (m_colmaj ? this->m_nr : this->m_nc); ++imin){
                     const int ri = m_colmaj ? imin : imaj;
@@ -50,4 +53,35 @@ namespace AnyODE {
         }
     };
 
+    constexpr int banded_ld_(int kl, int ku) { return 2*kl+ku+1; }
+
+    template<typename Real_t = double>
+    struct BandedMatrixView : public MatrixView<Real_t> {
+        int m_kl, m_ku;
+        static constexpr bool m_colmaj = true;  // dgbmv takes a trans arg, but not used at the moment.
+        BandedMatrixView(Real_t * const data, int nr, int nc, int kl, int ku, int ld=0) :
+            MatrixView<Real_t>(data ? data : new Real_t[(ld ? ld : banded_ld_(kl, ku))*nc], nr, nc,
+                               ld ? ld : banded_ld_(kl, ku), data == nullptr)
+        {}
+        Real_t& operator()(int ri, int ci) override final {
+            return this->m_data[m_kl + m_ku + 1 + ri - ci + ci*this->m_ld];
+        }
+        void dot_vec(const Real_t * const vec, Real_t * const out) override final {
+            Real_t alpha=1, beta=0;
+            int inc=1;
+            const char trans='N';
+            int sundials_dummy = 0;
+            constexpr gbmv_callback<Real_t> gbmv{};
+            gbmv(&trans, &(this->m_nr), &(this->m_nc), &(m_kl), &(m_ku), &alpha, this->m_data, &(this->m_ld),
+                 const_cast<Real_t *>(vec), &inc, &beta, out, &inc, sundials_dummy);
+        }
+        void set_to_eye_plus_scaled_mtx(Real_t scale, MatrixView<Real_t>& other) override final {
+            for (int ri = 0; ri < this->m_nr; ++ri){
+                for (int ci = std::max(0, ri-m_kl); ci < std::min(this->m_nc, ri+m_ku+1); ++ci){
+                    (*this)(ri, ci) = scale*other(ri, ci) + ((ri == ci) ? 1 : 0);
+                }
+            }
+        }
+
+    };
 }

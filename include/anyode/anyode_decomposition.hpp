@@ -13,10 +13,9 @@ namespace AnyODE {
         virtual int solve(const Real_t * const, Real_t * const) = 0;
     };
 
-    template <typename Real_t> struct LU_callbacks;
     template<typename Real_t = double>
     struct DenseLU : public DecompositionBase<Real_t> {
-        DenseLU_callbacks<Real_t> m_cbs;
+        // DenseLU_callbacks<Real_t> m_cbs;
         DenseMatrixView<Real_t> * m_view;
         buffer_t<int> m_ipiv;
         int m_info;
@@ -28,36 +27,57 @@ namespace AnyODE {
         }
         int factorize() override final {
             int info;
-            m_cbs.m_getrf(&(m_view->m_nr), &(m_view->m_nc), m_view->m_data, &(m_view->m_ld),
-                          &m_ipiv, &info);
-            return info
+            constexpr getrf_callback<Real_t> getrf{};
+            getrf(&(m_view->m_nr), &(m_view->m_nc), m_view->m_data, &(m_view->m_ld),
+                          buffer_get_raw_ptr(m_ipiv), &info);
+            return info;
         }
         int solve(const Real_t * const b, Real_t * const x) override final {
             char trans = 'N';
             int nrhs = 1;
             int info;
             std::copy(b, b + m_view->m_nr, x);
-            m_cbs.m_getrs(&trans, &(m_view->m_nr), &nrhs, m_view->m_data, &(m_view->m_ld),
+            constexpr getrs_callback<Real_t> getrs{};
+            getrs(&trans, &(m_view->m_nr), &nrhs, m_view->m_data, &(m_view->m_ld),
                           buffer_get_raw_ptr(m_ipiv), x, &(m_view->m_nr), &info);
             return info;
         }
     };
-    template <> struct DenseLU_callbacks<float>{
-        static constexpr auto m_getrf = sgetrf_;
-        static constexpr auto m_getrs = sgetrs_;
+
+    template<typename Real_t = double>
+    struct BandedLU : public DecompositionBase<Real_t> {
+        // BandedLU_callbacks<Real_t> m_cbs;
+        BandedMatrixView<Real_t> * m_view;
+        buffer_t<int> m_ipiv;
+        int m_info;
+        BandedLU(BandedMatrixView<Real_t> * view) :
+            m_view(view),
+            m_ipiv(buffer_factory<int>(view->m_nr))
+        {
+            m_info = factorize();
+        }
+        int factorize() override final {
+            int info;
+            constexpr gbtrf_callback<Real_t> gbtrf{};
+            gbtrf(&(m_view->m_nr), &(m_view->m_nc), &(m_view->m_kl), &(m_view->m_ku), m_view->m_data,
+                          &(m_view->m_ld), buffer_get_raw_ptr(m_ipiv), &info);
+            return info;
+        }
+        int solve(const Real_t * const b, Real_t * const x) override final {
+            char trans = 'N';
+            int nrhs = 1;
+            int info;
+            std::copy(b, b + m_view->m_nr, x);
+            constexpr gbtrs_callback<Real_t> gbtrs{};
+            gbtrs(&trans, &(m_view->m_nr), &(m_view->m_kl), &(m_view->m_ku), &nrhs, m_view->m_data,
+                          &(m_view->m_ld), buffer_get_raw_ptr(m_ipiv), x, &(m_view->m_nr), &info);
+            return info;
+        }
     };
-    template <> struct DenseLU_callbacks<double> {
-        static constexpr auto m_getrf = dgetrf_;
-        static constexpr auto m_getrs = dgetrs_;
-    };
-
-
-
-    template <typename Real_t> struct SVD_callbacks;
 
     template<typename Real_t = double>
     struct SVD : public DecompositionBase<Real_t> {
-        SVD_callbacks<Real_t> m_cbs;
+        // SVD_callbacks<Real_t> m_cbs;
         DenseMatrixView<Real_t> * m_view;
         buffer_t<Real_t> m_s;
         int m_ldu;
@@ -77,9 +97,10 @@ namespace AnyODE {
             int info;
             Real_t optim_work_size;
             char mode = 'A';
-            m_cbs.m_gesvd(&mode, &mode, &(m_view->m_nr), &(m_view->m_nc), m_view->m_data, &(m_view->m_ld),
-                          buffer_get_raw_ptr(m_s), buffer_get_raw_ptr(m_u), &m_ldu,
-                          buffer_get_raw_ptr(m_vt), &m_ldvt, &optim_work_size, &m_lwork, &info);
+            constexpr gesvd_callback<Real_t> gesvd{};
+            gesvd(&mode, &mode, &(m_view->m_nr), &(m_view->m_nc), m_view->m_data, &(m_view->m_ld),
+                  buffer_get_raw_ptr(m_s), buffer_get_raw_ptr(m_u), &m_ldu,
+                  buffer_get_raw_ptr(m_vt), &m_ldvt, &optim_work_size, &m_lwork, &info);
             m_lwork = static_cast<int>(optim_work_size);
             m_work = buffer_factory<Real_t>(m_lwork);
             m_info = factorize();
@@ -87,10 +108,10 @@ namespace AnyODE {
         int factorize() override final {
             int info;
             char mode = 'A';
-            m_cbs.m_gesvd(&mode, &mode, &(m_view->m_nr), &(m_view->m_nc), m_view->m_data, &(m_view->m_ld),
-                          buffer_get_raw_ptr(m_s), buffer_get_raw_ptr(m_u), &m_ldu,
-                          buffer_get_raw_ptr(m_vt), &m_ldvt, buffer_get_raw_ptr(m_work), &m_lwork, &info);
-
+            constexpr gesvd_callback<Real_t> gesvd{};
+            gesvd(&mode, &mode, &(m_view->m_nr), &(m_view->m_nc), m_view->m_data, &(m_view->m_ld),
+                  buffer_get_raw_ptr(m_s), buffer_get_raw_ptr(m_u), &m_ldu,
+                  buffer_get_raw_ptr(m_vt), &m_ldvt, buffer_get_raw_ptr(m_work), &m_lwork, &info);
             m_condition_number = std::fabs(m_s[0]/m_s[std::min(m_view->m_nr, m_view->m_nc) - 1]);
             return info;
         }
@@ -100,22 +121,15 @@ namespace AnyODE {
             char trans = 'T';
             int sundials_dummy = 0;
             auto y1 = buffer_factory<Real_t>(m_view->m_nr);
-            m_cbs.m_gemv(&trans, &(m_view->m_nr), &(m_view->m_nr), &alpha, buffer_get_raw_ptr(m_u), &(m_ldu),
-                   const_cast<Real_t*>(b), &incx, &beta, buffer_get_raw_ptr(y1), &incy, sundials_dummy);
+            constexpr gemv_callback<Real_t> gemv{};
+            gemv(&trans, &(m_view->m_nr), &(m_view->m_nr), &alpha, buffer_get_raw_ptr(m_u), &(m_ldu),
+                 const_cast<Real_t*>(b), &incx, &beta, buffer_get_raw_ptr(y1), &incy, sundials_dummy);
             for (int i=0; i < m_view->m_nr; ++i)
                 y1[i] /= m_s[i];
-            m_cbs.m_gemv(&trans, &(m_view->m_nc), &(m_view->m_nc), &alpha, buffer_get_raw_ptr(m_vt), &m_ldvt,
-                   buffer_get_raw_ptr(y1), &incx, &beta, x, &incy, sundials_dummy);
+            gemv(&trans, &(m_view->m_nc), &(m_view->m_nc), &alpha, buffer_get_raw_ptr(m_vt), &m_ldvt,
+                 buffer_get_raw_ptr(y1), &incx, &beta, x, &incy, sundials_dummy);
             return 0;
         }
 
-    };
-    template <> struct SVD_callbacks<float>{
-        static constexpr auto m_gesvd = sgesvd_;
-        static constexpr auto m_gemv = sgemv_;
-    };
-    template <> struct SVD_callbacks<double> {
-        static constexpr auto m_gesvd = dgesvd_;
-        static constexpr auto m_gemv = dgemv_;
     };
 }

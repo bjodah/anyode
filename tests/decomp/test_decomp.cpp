@@ -5,7 +5,7 @@
 #include "anyode/anyode_decomposition.hpp"
 
 
-TEST_CASE( "solve", "[SVD]" ) {
+TEST_CASE( "SVD_solve", "[SVD]" ) {
     constexpr int n = 6;
     constexpr int ld = 8;
     std::array<double, n*ld> data {{  // column major
@@ -33,7 +33,7 @@ TEST_CASE( "solve", "[SVD]" ) {
 
 }
 
-TEST_CASE( "solve", "[DenseLU]" ) {
+TEST_CASE( "DenseLU_solve", "[DenseLU]" ) {
     constexpr int n = 6;
     constexpr int ld = 8;
     std::array<double, n*ld> data {{  // column major
@@ -51,6 +51,38 @@ TEST_CASE( "solve", "[DenseLU]" ) {
     std::array<double, n> b;
     dmv.dot_vec(&xref[0], &b[0]);
     auto decomp = AnyODE::DenseLU<double>(&dmv);
+    REQUIRE( decomp.m_info == 0 );
+    int flag = decomp.solve(&b[0], &x[0]);
+    REQUIRE( flag == 0 );
+    for (int idx=0; idx<n; ++idx){
+        REQUIRE( std::abs((x[idx] - xref[idx])/2e-13) < 1 );
+    }
+}
+
+TEST_CASE( "BandedLU_solve", "[BandedLU]" ) {
+    constexpr int n = 6;
+    constexpr int ld = 8;
+    std::array<double, n*ld> data {{  // column major
+        5,5,1,0,0,0,0,0,
+        3,8,0,2,0,0,0,0,
+        2,0,8,4,3,0,0,0,
+        0,3,4,4,0,4,0,0,
+        0,0,4,0,6,2,0,0,
+        0,0,0,5,9,7,0,0
+    }};
+    bool colmaj = true;
+    AnyODE::BandedMatrixView<double> bmv {nullptr, n, n, 2, 2};
+    REQUIRE(bmv.m_ld == 7);
+    for (int ri=0; ri < n; ++ri){
+        for (int ci = std::max(0, ri-2); ci < std::min(n, ri+2+1); ++ci){
+            bmv(ri, ci) = data[ri*n + ci];
+        }
+    }
+    std::array<double, n> xref {{-7, 13, 9, -4, -0.7, 42}};
+    std::array<double, n> x;
+    std::array<double, n> b;
+    bmv.dot_vec(&xref[0], &b[0]);
+    auto decomp = AnyODE::BandedLU<double>(&bmv);
     REQUIRE( decomp.m_info == 0 );
     int flag = decomp.solve(&b[0], &x[0]);
     REQUIRE( flag == 0 );
