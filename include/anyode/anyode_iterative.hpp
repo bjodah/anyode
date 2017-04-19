@@ -10,7 +10,7 @@
 
 namespace AnyODE {
 
-    template <typename Real_t=double, typename JacMat_t=DenseMatrixView, typename Decomp_t=SVD>
+    template <typename Real_t=double, typename JacMat_t=DenseMatrixView<Real_t>, typename Decomp_t=SVD<Real_t>>
     struct OdeSysIterativeBase : public OdeSysBase<Real_t> {
         int m_njacvec_dot=0, m_nprec_setup=0, m_nprec_solve=0;
         std::unique_ptr<JacMat_t> m_jac_cache {nullptr};
