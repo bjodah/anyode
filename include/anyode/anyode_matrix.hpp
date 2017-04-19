@@ -1,20 +1,28 @@
 #pragma once
-
+#include <stdlib.h>  // aligned_alloc & free
+#include <stdint.h> // uintptr_t
 namespace AnyODE {
 
     template<typename Real_t>
-    struct MatrixView {
+    class MatrixView {
+        void * m_array_ = nullptr;
+        static constexpr int alignment_bytes_ = 64;
+        Real_t * alloc_array_(int n){
+            m_array_ = aligned_alloc(alignment_bytes_, sizeof(Real_t)*n);
+            return static_cast<Real_t *>(m_array_);
+        }
+    public:
         Real_t * m_data;
         int m_nr, m_nc, m_ld, m_ndata;
         bool m_own_data;
         MatrixView(Real_t * const data, int nr, int nc, int ld, int ndata) :
-            m_data(data ? data : new Real_t[ndata]), m_nr(nr), m_nc(nc), m_ld(ld), m_ndata(ndata), m_own_data(data == nullptr) {}
+            m_data(data ? data : alloc_array_(ndata)), m_nr(nr), m_nc(nc), m_ld(ld), m_ndata(ndata), m_own_data(data == nullptr) {}
         MatrixView(const MatrixView<Real_t>& ori) : MatrixView(nullptr, ori.m_nr, ori.m_nc, ori.m_ld, ori.m_ndata) {
             std::copy(ori.m_data, ori.m_data + m_ndata, m_data);
         }
         virtual ~MatrixView(){
-            if (m_own_data and m_data)
-                delete []m_data;
+            if (m_own_data and m_array_)
+                free(m_array_);
         }
         virtual Real_t& operator()(int ri, int ci) noexcept = 0;
         const Real_t& operator()(int ri, int ci) const noexcept { return (*const_cast<MatrixView<Real_t>* >(this))(ri, ci); }
