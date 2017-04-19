@@ -80,11 +80,11 @@ TEST_CASE( "BandedLU_solve", "[BandedLU]" ) {
     REQUIRE(bpmv.m_nc == n);
     for (int ri=0; ri < n; ++ri){
         for (int ci = std::max(0, ri-nd); ci < std::min(n, ri+nd+1); ++ci){
-            bpmv(ri, ci) = data[ri*ld + ci];
+            bpmv(ri, ci) = data[ci*ld + ri];
         }
     }
     std::array<double, n> xref {{-7, 13, 9, -4, -0.7, 42}};
-    std::array<double, n> bref {{39. ,   75. ,   39.9,  227. ,  115.8,  267.7}};
+    std::array<double, n> bref {{22, 57, 46.2, 256, 400.8, 276.6}};
     std::array<double, n> x;
     std::array<double, n> b;
     bpmv.dot_vec(&xref[0], &b[0]);

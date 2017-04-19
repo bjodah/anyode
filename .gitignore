@@ -5,3 +5,5 @@ tests/eulerfw/_eulerfw.cpp
 tests/eulerfw/_eulerfw.pyxbldc
 tests/decomp/test_decomp
 tests/decomp/test_decomp_ndebug
+tests/matrix/test_matrix
+tests/matrix/test_matrix_ndebug
