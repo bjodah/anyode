@@ -7,6 +7,8 @@ namespace AnyODE {
     class MatrixView {
         void * m_array_ = nullptr;
         static constexpr int alignment_bytes_ = 64;
+        static constexpr int alignment_items_ = alignment_bytes_/sizeof(Real_t);
+        static_assert(sizeof(Real_t) <= alignment_bytes_, "unhandled situation");
         Real_t * alloc_array_(int n){
             m_array_ = aligned_alloc(alignment_bytes_, sizeof(Real_t)*n);
             return static_cast<Real_t *>(m_array_);
