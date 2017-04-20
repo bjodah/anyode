@@ -1,19 +1,21 @@
 #pragma once
 #include <stdlib.h>  // aligned_alloc & free
 #include <stdint.h> // uintptr_t
+#include <cstring>  // std::memset
 namespace AnyODE {
+    template<typename Real_t> class MatrixView;
 
     template<typename Real_t>
     class MatrixView {
         void * m_array_ = nullptr;
-        static constexpr int alignment_bytes_ = 64;
-        static constexpr int alignment_items_ = alignment_bytes_/sizeof(Real_t);
-        static_assert(sizeof(Real_t) <= alignment_bytes_, "unhandled situation");
         Real_t * alloc_array_(int n){
             m_array_ = aligned_alloc(alignment_bytes_, sizeof(Real_t)*n);
             return static_cast<Real_t *>(m_array_);
         }
     public:
+        static constexpr int alignment_bytes_ = 64;
+        static constexpr int alignment_items_ = alignment_bytes_/sizeof(Real_t);
+        static_assert(sizeof(Real_t) <= alignment_bytes_, "unhandled situation");
         Real_t * m_data;
         int m_nr, m_nc, m_ld, m_ndata;
         bool m_own_data;
@@ -26,10 +28,11 @@ namespace AnyODE {
             if (m_own_data and m_array_)
                 free(m_array_);
         }
-        virtual Real_t& operator()(int ri, int ci) noexcept = 0;
+        virtual Real_t& operator()(int ri, int ci) = 0;
         const Real_t& operator()(int ri, int ci) const noexcept { return (*const_cast<MatrixView<Real_t>* >(this))(ri, ci); }
         virtual void dot_vec(const Real_t * const, Real_t * const) = 0;
         virtual void set_to_eye_plus_scaled_mtx(Real_t, const MatrixView&) = 0;
+        void set_to(Real_t value) noexcept { std::memset(m_data, value, m_ndata*sizeof(Real_t)); }
     };
 
     template<typename Real_t = double>
@@ -41,6 +44,17 @@ namespace AnyODE {
         {}
         DenseMatrixView(const DenseMatrixView<Real_t>& ori) : MatrixView<Real_t>(ori), m_colmaj(ori.m_colmaj)
         {}
+        DenseMatrixView(const MatrixView<Real_t>& source) :
+            MatrixView<Real_t>(nullptr, source.m_nr, source.m_nc, source.m_nr, source.m_nr*source.m_nc), m_colmaj(true)
+        {
+            for (int imaj = 0; imaj < (m_colmaj ? this->m_nc : this->m_nr); ++imaj){
+                for (int imin = 0; imin < (m_colmaj ? this->m_nr : this->m_nc); ++imin){
+                    const int ri = m_colmaj ? imin : imaj;
+                    const int ci = m_colmaj ? imaj : imin;
+                    this->m_data[this->m_ld*imaj + imin] = source(ri, ci);
+                }
+            }
+        }
         Real_t& operator()(int ri, int ci) noexcept override final {
             const int imaj = m_colmaj ? ci : ri;
             const int imin = m_colmaj ? ri : ci;
@@ -77,6 +91,15 @@ namespace AnyODE {
             MatrixView<Real_t>(data, nr, nc, LD, LD*nc),
             m_kl(kl), m_ku(ku)
         {}
+        BandedPaddedMatrixView(const MatrixView<Real_t>& source, int kl, int ku, int ld=0) :
+            MatrixView<Real_t>(nullptr, source.m_nr, source.m_nc, LD, LD*source.m_nc), m_kl(kl), m_ku(ku)
+        {
+            for (int ci = 0; ci < this->m_nc; ++ci){
+                for (int ri = std::max(0, ci-m_ku); ri < std::min(this->m_nr, ci+m_kl+1); ++ri){
+                    (*this)(ri, ci) = source(ri, ci);
+                }
+            }
+        }
 #undef LD
         BandedPaddedMatrixView(const BandedPaddedMatrixView<Real_t>& ori) : MatrixView<Real_t>(ori), m_kl(ori.m_kl), m_ku(ori.m_ku)
         {}
@@ -93,12 +116,9 @@ namespace AnyODE {
                  &(this->m_ld), const_cast<Real_t *>(vec), &inc, &beta, out, &inc, sundials_dummy);
         }
         void set_to_eye_plus_scaled_mtx(Real_t scale, const MatrixView<Real_t>& source) override final {
-            for (int ci = 0; ci < this->m_nc; ++ci){
-                for (int ri = std::max(0, ci-m_ku); ri < std::min(this->m_nr, ci+m_kl+1); ++ri){
+            for (int ci = 0; ci < this->m_nc; ++ci)
+                for (int ri = std::max(0, ci-m_ku); ri < std::min(this->m_nr, ci+m_kl+1); ++ri)
                     (*this)(ri, ci) = scale*source(ri, ci) + ((ri == ci) ? 1 : 0);
-                }
-            }
         }
-
     };
 }

@@ -45,7 +45,7 @@ namespace AnyODE {
     };
 
     template<typename Real_t = double>
-    struct BandedLU : public DecompositionBase<Real_t> {
+    struct BandedLU : public DecompositionBase<Real_t> { // operates inplace
         // BandedLU_callbacks<Real_t> m_cbs;
         BandedPaddedMatrixView<Real_t> * m_view;
         buffer_t<int> m_ipiv;
