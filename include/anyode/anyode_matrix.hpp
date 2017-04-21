@@ -8,8 +8,10 @@ namespace AnyODE {
     template<typename Real_t>
     class MatrixView {
         void * m_array_ = nullptr;
+        bool m_own_array_ = false;
         Real_t * alloc_array_(int n){
             m_array_ = aligned_alloc(alignment_bytes_, sizeof(Real_t)*n);
+            m_own_array_ = true;
             return static_cast<Real_t *>(m_array_);
         }
     public:
@@ -19,17 +21,28 @@ namespace AnyODE {
         Real_t * m_data;
         int m_nr, m_nc, m_ld, m_ndata;
         bool m_own_data;
-        MatrixView(Real_t * const data, int nr, int nc, int ld, int ndata) :
-            m_data(data ? data : alloc_array_(ndata)), m_nr(nr), m_nc(nc), m_ld(ld), m_ndata(ndata), m_own_data(data == nullptr) {}
+        MatrixView(Real_t * const data, int nr, int nc, int ld, int ndata, bool own_data=false) :
+            m_data(data ? data : alloc_array_(ndata)), m_nr(nr), m_nc(nc), m_ld(ld), m_ndata(ndata),
+            m_own_data(own_data)
+        {
+            if (data == nullptr and own_data)
+                throw std::runtime_error("Cannot own a nullptr");
+        }
         MatrixView(const MatrixView<Real_t>& ori) : MatrixView(nullptr, ori.m_nr, ori.m_nc, ori.m_ld, ori.m_ndata) {
             std::copy(ori.m_data, ori.m_data + m_ndata, m_data);
         }
         virtual ~MatrixView(){
-            if (m_own_data and m_array_)
+            if (m_own_array_ and m_array_)
                 free(m_array_);
+            if (m_own_data and m_data)
+                free(m_data);
         }
         virtual Real_t& operator()(int ri, int ci) = 0;
-        const Real_t& operator()(int ri, int ci) const noexcept { return (*const_cast<MatrixView<Real_t>* >(this))(ri, ci); }
+        const Real_t& operator()(int ri, int ci) const { return (*const_cast<MatrixView<Real_t>* >(this))(ri, ci); }
+        bool valid_index(const int ri, const int ci) const {
+            return (0 <= ri) and (ri < this->m_nr) and (0 <= ci) and (ci < this->m_nc);
+        }
+        virtual bool guaranteed_zero_index(int ri, int ci) const = 0;
         virtual void dot_vec(const Real_t * const, Real_t * const) = 0;
         virtual void set_to_eye_plus_scaled_mtx(Real_t, const MatrixView&) = 0;
         void set_to(Real_t value) noexcept { std::memset(m_data, value, m_ndata*sizeof(Real_t)); }
@@ -38,8 +51,8 @@ namespace AnyODE {
     template<typename Real_t = double>
     struct DenseMatrixView : public MatrixView<Real_t> {
         bool m_colmaj;
-        DenseMatrixView(Real_t * const data, int nr, int nc, int ld, bool colmaj=true) :
-            MatrixView<Real_t>(data, nr, nc, ld, ld*(colmaj ? nc : nr)),
+        DenseMatrixView(Real_t * const data, int nr, int nc, int ld, bool colmaj=true, bool own_data=false) :
+            MatrixView<Real_t>(data, nr, nc, ld, ld*(colmaj ? nc : nr), own_data),
             m_colmaj(colmaj)
         {}
         DenseMatrixView(const DenseMatrixView<Real_t>& ori) : MatrixView<Real_t>(ori), m_colmaj(ori.m_colmaj)
@@ -60,6 +73,7 @@ namespace AnyODE {
             const int imin = m_colmaj ? ri : ci;
             return this->m_data[imaj*this->m_ld + imin];
         }
+        virtual bool guaranteed_zero_index(const int /* ri */, const int /* ci */) const override { return false; }
         void dot_vec(const Real_t * const vec, Real_t * const out) override final {
             Real_t alpha=1, beta=0;
             int inc=1;
@@ -87,24 +101,31 @@ namespace AnyODE {
         int m_kl, m_ku;
         static constexpr bool m_colmaj = true;  // dgbmv takes a trans arg, but not used at the moment.
 #define LD (ld ? ld : banded_padded_ld_(kl, ku))
-        BandedPaddedMatrixView(Real_t * const data, int nr, int nc, int kl, int ku, int ld=0) :
-            MatrixView<Real_t>(data, nr, nc, LD, LD*nc),
+        BandedPaddedMatrixView(Real_t * const data, int nr, int nc, int kl, int ku, int ld=0, bool own_data=false) :
+            MatrixView<Real_t>(data, nr, nc, LD, LD*nc, own_data),
             m_kl(kl), m_ku(ku)
         {}
+        void read(const MatrixView<Real_t>& source){
+            for (int ci = 0; ci < this->m_nc; ++ci){
+                for (int ri = std::max(0, ci-m_ku); ri < std::min(this->m_nr, ci+m_kl+1); ++ri){
+                    (*this)(ri, ci) = (source.guaranteed_zero_index(ri, ci)) ? 0 : source(ri, ci);
+                }
+            }
+        }
         BandedPaddedMatrixView(const MatrixView<Real_t>& source, int kl, int ku, int ld=0) :
             MatrixView<Real_t>(nullptr, source.m_nr, source.m_nc, LD, LD*source.m_nc), m_kl(kl), m_ku(ku)
         {
-            for (int ci = 0; ci < this->m_nc; ++ci){
-                for (int ri = std::max(0, ci-m_ku); ri < std::min(this->m_nr, ci+m_kl+1); ++ri){
-                    (*this)(ri, ci) = source(ri, ci);
-                }
-            }
+            read(source);
         }
 #undef LD
         BandedPaddedMatrixView(const BandedPaddedMatrixView<Real_t>& ori) : MatrixView<Real_t>(ori), m_kl(ori.m_kl), m_ku(ori.m_ku)
         {}
         Real_t& operator()(int ri, int ci) noexcept override final {
             return this->m_data[m_kl + m_ku + ri - ci + ci*this->m_ld]; // m_kl paddding
+        }
+        virtual bool guaranteed_zero_index(const int ri, const int ci) const override {
+            const int delta = ri - ci;
+            return (this->m_ku < delta) or (delta < -(this->m_kl));
         }
         void dot_vec(const Real_t * const vec, Real_t * const out) override final {
             Real_t alpha=1, beta=0;
