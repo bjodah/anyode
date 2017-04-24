@@ -17,7 +17,7 @@ TEST_CASE( "SVD_solve", "[SVD]" ) {
         0,0,0,5,9,7,0,0
     }};
     bool colmaj = true;
-    AnyODE::DenseMatrixView<double> dmv {&data[0], n, n, ld, colmaj};
+    AnyODE::DenseMatrix<double> dmv {&data[0], n, n, ld, colmaj};
     std::array<double, n> xref {{-7, 13, 9, -4, -0.7, 42}};
     std::array<double, n> x;
     std::array<double, n> b;
@@ -45,7 +45,7 @@ TEST_CASE( "DenseLU_solve", "[DenseLU]" ) {
         0,0,0,5,9,7,0,0
     }};
     bool colmaj = true;
-    AnyODE::DenseMatrixView<double> dmv {&data[0], n, n, ld, colmaj};
+    AnyODE::DenseMatrix<double> dmv {&data[0], n, n, ld, colmaj};
     std::array<double, n> xref {{-7, 13, 9, -4, -0.7, 42}};
     std::array<double, n> x;
     std::array<double, n> b;
@@ -72,7 +72,7 @@ TEST_CASE( "BandedLU_solve", "[BandedLU]" ) {
         0,0,0,5,9,7,0,0
     }};
     bool colmaj = true;
-    AnyODE::BandedPaddedMatrixView<double> bpmv {nullptr, n, n, nd, nd};
+    AnyODE::BandedMatrix<double> bpmv {nullptr, n, n, nd, nd};
     REQUIRE(bpmv.m_ld == 3*nd+1);
     REQUIRE(bpmv.m_kl == nd);
     REQUIRE(bpmv.m_ku == nd);

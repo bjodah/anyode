@@ -6,7 +6,7 @@
 #include "anyode/anyode_matrix.hpp"
 
 
-AnyODE::DenseMatrixView<double> * mk_dm(bool own_data=false){
+AnyODE::DenseMatrix<double> * mk_dm(bool own_data=false){
     constexpr int n = 6;
     constexpr int ld = 8;
     double * data = static_cast<double *>(malloc(sizeof(double)*n*ld));
@@ -20,10 +20,10 @@ AnyODE::DenseMatrixView<double> * mk_dm(bool own_data=false){
             }};
     std::copy(data_.data(), data_.end(), data);
     bool colmaj = true;
-    return new AnyODE::DenseMatrixView<double> {data, n, n, ld, colmaj, own_data};
+    return new AnyODE::DenseMatrix<double> {data, n, n, ld, colmaj, own_data};
 }
 
-TEST_CASE( "DenseView.copy", "[DenseView]" ) {
+TEST_CASE( "DenseMatrix.copy", "[DenseMatrix]" ) {
     const auto ori = mk_dm();
     const int n = 6;
     const int ld = 8;
@@ -53,11 +53,11 @@ TEST_CASE( "DenseView.copy", "[DenseView]" ) {
     }
 }
 
-TEST_CASE( "banded_padded_from_dense", "[BandedPaddedMatrixView]" ) {
+TEST_CASE( "banded_padded_from_dense", "[BandedMatrix]" ) {
     const int n = 6;
     const auto dense = mk_dm(true);
     REQUIRE( dense->m_own_data );
-    auto banded = AnyODE::BandedPaddedMatrixView<double>(*dense, 2, 2);
+    auto banded = AnyODE::BandedMatrix<double>(*dense, 2, 2);
     delete dense;
     REQUIRE( banded.m_kl == 2 );
     REQUIRE( banded.m_ku == 2 );
