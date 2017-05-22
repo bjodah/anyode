@@ -2,10 +2,16 @@
 #include <stdlib.h>  // aligned_alloc & free
 #include <stdint.h> // uintptr_t
 #include <cstring>  // std::memset
+#include <stdexcept> // std::runtime_error
 
 #include "anyode/anyode_blas_lapack.hpp"
 
 namespace AnyODE {
+    static constexpr int alignment_bytes_ = 64; // L1 cache line
+    template<typename T> constexpr std::size_t n_padded(std::size_t n){
+        return ((n*sizeof(T) + alignment_bytes_ - 1) & ~(alignment_bytes_ - 1)) / sizeof(T);
+    }
+
     template<typename Real_t> class MatrixBase;
 
     template<typename Real_t>
@@ -18,9 +24,9 @@ namespace AnyODE {
             return static_cast<Real_t *>(m_array_);
         }
     public:
-        static constexpr int alignment_bytes_ = 64;
-        static constexpr int alignment_items_ = alignment_bytes_/sizeof(Real_t);
-        static_assert(sizeof(Real_t) <= alignment_bytes_, "unhandled situation");
+        // static constexpr int alignment_items_ = alignment_bytes_/sizeof(Real_t);
+        // static_assert(sizeof(Real_t) <= alignment_bytes_, "unhandled situation");
+
         Real_t * m_data;
         int m_nr, m_nc, m_ld, m_ndata;
         bool m_own_data;
@@ -42,12 +48,12 @@ namespace AnyODE {
         }
         virtual Real_t& operator()(int ri, int ci) = 0;
         const Real_t& operator()(int ri, int ci) const { return (*const_cast<MatrixBase<Real_t>* >(this))(ri, ci); }
-        bool valid_index(const int ri, const int ci) const {
+        virtual bool valid_index(const int ri, const int ci) const {
             return (0 <= ri) and (ri < this->m_nr) and (0 <= ci) and (ci < this->m_nc);
         }
         virtual bool guaranteed_zero_index(int ri, int ci) const = 0;
         virtual void dot_vec(const Real_t * const, Real_t * const) = 0;
-        virtual void set_to_eye_plus_scaled_mtx(Real_t, const MatrixBase&) = 0;
+        virtual void set_to_eye_plus_scaled_mtx(Real_t, const MatrixBase&) { throw std::runtime_error("Not implemented."); };
         void set_to(Real_t value) noexcept { std::memset(m_data, value, m_ndata*sizeof(Real_t)); }
     };
 
