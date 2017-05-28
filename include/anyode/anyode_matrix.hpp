@@ -7,10 +7,10 @@
 #include "anyode/anyode_blas_lapack.hpp"
 
 namespace AnyODE {
-    static constexpr int alignment_bytes_ = 64; // L1 cache line
-    template<typename T> constexpr std::size_t n_padded(std::size_t n){
-        return ((n*sizeof(T) + alignment_bytes_ - 1) & ~(alignment_bytes_ - 1)) / sizeof(T);
+    template<typename T> constexpr std::size_t n_padded(std::size_t n, int alignment_bytes){
+        return ((n*sizeof(T) + alignment_bytes - 1) & ~(alignment_bytes - 1)) / sizeof(T);
     }
+    static constexpr int alignment_bytes_ = 64; // L1 cache line
 
     template<typename Real_t> class MatrixBase;
 
@@ -24,8 +24,6 @@ namespace AnyODE {
             return static_cast<Real_t *>(m_array_);
         }
     public:
-        // static constexpr int alignment_items_ = alignment_bytes_/sizeof(Real_t);
-        // static_assert(sizeof(Real_t) <= alignment_bytes_, "unhandled situation");
 
         Real_t * m_data;
         int m_nr, m_nc, m_ld, m_ndata;
