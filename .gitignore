@@ -1,8 +1,9 @@
-tests/eulerfw/_eulerfw.cpp
-
-tests/eulerfw/_eulerfw.pyxbldc
 **.pyc
-**/catch.hpp
-tests/svd/test_svd
-tests/svd/test_svd_ndebug
 **.cache/
+**/catch.hpp
+tests/eulerfw/_eulerfw.cpp
+tests/eulerfw/_eulerfw.pyxbldc
+tests/decomp/test_decomp
+tests/decomp/test_decomp_ndebug
+tests/matrix/test_matrix
+tests/matrix/test_matrix_ndebug
