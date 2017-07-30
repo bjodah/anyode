@@ -31,8 +31,8 @@ namespace AnyODE {
             const int ny = this->get_ny();
             if (m_jac_cache == nullptr){
                 m_jac_cache = make_unique<JacMat_t>(nullptr, ny, ny, ny, true);
-                status = this->dense_jac_cmaj(t, y, fy, m_jac_cache->m_data, m_jac_cache->m_ld);
             }
+            status = this->dense_jac_cmaj(t, y, fy, m_jac_cache->m_data, m_jac_cache->m_ld);
             m_jac_cache->dot_vec(vec, out);
             m_njacvec_dot++;
             return status;
