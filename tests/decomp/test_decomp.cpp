@@ -23,7 +23,8 @@ TEST_CASE( "SVD_solve", "[SVD]" ) {
     std::array<double, n> b;
     dmv.dot_vec(&xref[0], &b[0]);
     auto decomp = AnyODE::SVD<double>(&dmv);
-    REQUIRE( decomp.m_info == 0 );
+    int info = decomp.factorize();
+    REQUIRE( info == 0 );
     int flag = decomp.solve(&b[0], &x[0]);
     REQUIRE( flag == 0 );
     for (int idx=0; idx<n; ++idx){
@@ -51,7 +52,8 @@ TEST_CASE( "DenseLU_solve", "[DenseLU]" ) {
     std::array<double, n> b;
     dmv.dot_vec(&xref[0], &b[0]);
     auto decomp = AnyODE::DenseLU<double>(&dmv);
-    REQUIRE( decomp.m_info == 0 );
+    int info = decomp.factorize();
+    REQUIRE( info == 0 );
     int flag = decomp.solve(&b[0], &x[0]);
     REQUIRE( flag == 0 );
     for (int idx=0; idx<n; ++idx){
@@ -93,7 +95,8 @@ TEST_CASE( "BandedLU_solve", "[BandedLU]" ) {
 
     }
     auto decomp = AnyODE::BandedLU<double>(&bpmv);
-    REQUIRE( decomp.m_info == 0 );
+    int info = decomp.factorize();
+    REQUIRE( info == 0 );
     int flag = decomp.solve(&b[0], &x[0]);
     REQUIRE( flag == 0 );
     for (int idx=0; idx<n; ++idx){

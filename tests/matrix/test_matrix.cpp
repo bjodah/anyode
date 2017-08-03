@@ -54,6 +54,7 @@ TEST_CASE( "DenseMatrix.copy", "[DenseMatrix]" ) {
 }
 
 TEST_CASE( "banded_padded_from_dense", "[BandedMatrix]" ) {
+    REQUIRE( AnyODE::banded_padded_ld(3, 5) == 3*2 + 5 + 1);
     const int n = 6;
     const auto dense = mk_dm(true);
     REQUIRE( dense->m_own_data );
