@@ -5,6 +5,6 @@ export ASAN_OPTIONS=symbolize=1
 for dir in tests/decomp tests/matrix; do 
     cd $dir; make -B DEFINES=-D_GLIBCXX_DEBUG; cd -
     cd $dir; make -B DEFINES=-DNDEBUG; cd -
-    cd $dir; make -B CXX=clang++-3.8 EXTRA_FLAGS="-fsanitize=address"; cd -
-    cd $dir; make -B CXX=clang++-3.8 EXTRA_FLAGS="-fsanitize=address" DEFINES=-DNDEBUG; cd -
+    cd $dir; make -B CXX=clang++-5.0 EXTRA_FLAGS="-fsanitize=address"; cd -
+    cd $dir; make -B CXX=clang++-5.0 EXTRA_FLAGS="-fsanitize=address" DEFINES=-DNDEBUG; cd -
 done
