@@ -39,7 +39,7 @@ namespace AnyODE {
         virtual int get_mlower() const { return -1; } // -1 denotes "not banded"
         virtual int get_mupper() const { return -1; } // -1 denotes "not banded"
         virtual int get_nroots() const { return 0; } // Do not look for roots by default;
-        virtual int get_nquad() const { return 0; } // Do not track quadratures by default;
+        virtual int get_nquads() const { return 0; } // Do not track quadratures by default;
         virtual Real_t get_dx0(Real_t /* t */,
                                const Real_t * const /* y */) {
             return default_dx0;
