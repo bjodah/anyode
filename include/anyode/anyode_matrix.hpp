@@ -30,8 +30,8 @@ namespace AnyODE {
             m_data(data ? data : alloc_array_(ndata)), m_nr(nr), m_nc(nc), m_ld(ld), m_ndata(ndata),
             m_own_data(own_data)
         {
-            if (data == nullptr and own_data)
-                throw std::runtime_error("Cannot own a nullptr");
+            if (data == nullptr and !own_data)
+                throw std::runtime_error("That would leak memory");
         }
         MatrixBase(const MatrixBase<Real_t>& ori) : MatrixBase(nullptr, ori.m_nr, ori.m_nc, ori.m_ld, ori.m_ndata) {
             std::copy(ori.m_data, ori.m_data + m_ndata, m_data);
@@ -151,18 +151,21 @@ namespace AnyODE {
     template<typename Real_t=double>
     struct DiagonalMatrix : public MatrixBase<Real_t> { // single diagonal
         static constexpr bool m_colmaj = true;
-        DiagonalMatrix(Real_t * const data, int n, bool own_data=false) : MatrixBase<Real_t>(data, n, n, 1, n, own_data)
+        DiagonalMatrix(Real_t * const data, int nr, int nc, int ld, bool own_data=false) :
+            MatrixBase<Real_t>(data, nr, nc, ld, ld*nc, own_data)
         {
         }
         Real_t& operator()(int /* ri */, int ci) noexcept override final {
             return this->m_data[ci*this->m_ld];
         }
         void read(const MatrixBase<Real_t>& source){
-            for (int i = 0; i < this->m_nr; ++i){
+            for (int i = 0; i < this->m_nc; ++i){
                 (*this)(i, i) = (source.guaranteed_zero_index(i, i)) ? 0 : source(i, i);
             }
         }
-        DiagonalMatrix(const MatrixBase<Real_t>& source) : MatrixBase<Real_t>(nullptr, source.m_nr, source.m_nr, 1, source.m_nr)
+        DiagonalMatrix(const MatrixBase<Real_t>& source) :
+            MatrixBase<Real_t>(nullptr, std::min(source.m_nr, source.m_nc), std::min(source.m_nr, source.m_nc),
+                               1, std::min(source.m_nr, source.m_nc))
         {
             read(source);
         }

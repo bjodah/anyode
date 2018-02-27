@@ -107,7 +107,7 @@ TEST_CASE( "DiagInv_solve", "[Diaginv]" ) {
     constexpr int n = 6;
     constexpr int ld = 1;
     std::array<double, n*ld> data {{2,4,8,5,7,13}};
-    AnyODE::DiagonalMatrix<double> dm {nullptr, n};
+    AnyODE::DiagonalMatrix<double> dm {nullptr, n, n, 1};
     REQUIRE(dm.m_ld == 1);
     REQUIRE(dm.m_nr == n);
     REQUIRE(dm.m_nc == n);

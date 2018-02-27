@@ -77,7 +77,7 @@ AnyODE::DiagonalMatrix<double> * mk_dg(bool own_data=false){
     double * data = static_cast<double *>(malloc(sizeof(double)*n*ld));
     std::array<double, n> data_ {{2,4,8,5,7,13}};
     std::copy(data_.data(), data_.end(), data);
-    return new AnyODE::DiagonalMatrix<double> {data, n, own_data};
+    return new AnyODE::DiagonalMatrix<double> {data, n, n, 1, own_data};
 }
 
 TEST_CASE( "DiagonalMatrix methods", "[DiagonalMatrix]" ) {
