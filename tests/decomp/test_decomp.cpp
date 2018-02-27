@@ -73,7 +73,6 @@ TEST_CASE( "BandedLU_solve", "[BandedLU]" ) {
         0,0,4,0,6,2,0,0,
         0,0,0,5,9,7,0,0
     }};
-    bool colmaj = true;
     AnyODE::BandedMatrix<double> bpmv {nullptr, n, n, nd, nd};
     REQUIRE(bpmv.m_ld == 3*nd+1);
     REQUIRE(bpmv.m_kl == nd);
@@ -95,6 +94,35 @@ TEST_CASE( "BandedLU_solve", "[BandedLU]" ) {
 
     }
     auto decomp = AnyODE::BandedLU<double>(&bpmv);
+    int info = decomp.factorize();
+    REQUIRE( info == 0 );
+    int flag = decomp.solve(&b[0], &x[0]);
+    REQUIRE( flag == 0 );
+    for (int idx=0; idx<n; ++idx){
+        REQUIRE( std::abs((x[idx] - xref[idx])/2e-13) < 1 );
+    }
+}
+
+TEST_CASE( "DiagInv_solve", "[Diaginv]" ) {
+    constexpr int n = 6;
+    constexpr int ld = 1;
+    std::array<double, n*ld> data {{2,4,8,5,7,13}};
+    AnyODE::DiagonalMatrix<double> dm {nullptr, n, n, 1};
+    REQUIRE(dm.m_ld == 1);
+    REQUIRE(dm.m_nr == n);
+    REQUIRE(dm.m_nc == n);
+    for (int i=0; i < n; ++i){
+        dm(i, i) = data[i];
+    }
+    std::array<double, n> xref {{-7, 13, 9, -4, -0.7, 42}};
+    std::array<double, n> bref {{-14. ,   52. ,   72. ,  -20. ,   -4.9,  546.}};
+    std::array<double, n> x;
+    std::array<double, n> b;
+    dm.dot_vec(&xref[0], &b[0]);
+    for (int idx=0; idx<n; ++idx){
+        REQUIRE( std::abs((b[idx] - bref[idx])/2e-13) < 1 );
+    }
+    auto decomp = AnyODE::DiagonalInv<double>(&dm);
     int info = decomp.factorize();
     REQUIRE( info == 0 );
     int flag = decomp.solve(&b[0], &x[0]);
