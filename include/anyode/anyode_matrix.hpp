@@ -180,6 +180,10 @@ namespace AnyODE {
                 out[i] = this->m_data[i]*vec[i];
             }
         }
+        void set_to_eye_plus_scaled_mtx(Real_t scale, const MatrixBase<Real_t>& source) override {
+            for (int i = 0; i < this->m_nc; ++i)
+                this->m_data[i] = 1 + scale*source(i, i);
+        }
         void set_to_eye_plus_scaled_mtx(Real_t scale, const DiagonalMatrix<Real_t>& source) {
             for (int i = 0; i < this->m_nc; ++i)
                 this->m_data[i] = 1 + scale*source.m_data[i];
