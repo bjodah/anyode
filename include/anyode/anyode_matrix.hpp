@@ -30,8 +30,8 @@ namespace AnyODE {
             m_data(data ? data : alloc_array_(ndata)), m_nr(nr), m_nc(nc), m_ld(ld), m_ndata(ndata),
             m_own_data(own_data)
         {
-            if (data == nullptr and !own_data)
-                throw std::runtime_error("That would leak memory");
+            if (data == nullptr and own_data)
+                throw std::runtime_error("own_data not needed for nullptr");
         }
         MatrixBase(const MatrixBase<Real_t>& ori) : MatrixBase(nullptr, ori.m_nr, ori.m_nc, ori.m_ld, ori.m_ndata) {
             std::copy(ori.m_data, ori.m_data + m_ndata, m_data);
