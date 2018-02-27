@@ -69,3 +69,43 @@ TEST_CASE( "banded_padded_from_dense", "[BandedMatrix]" ) {
     REQUIRE( std::abs(banded.m_data[5] - 5) < 1e-15 );
     REQUIRE( std::abs(banded.m_data[6] - 1) < 1e-15 );
 }
+
+
+AnyODE::DiagonalMatrix<double> * mk_dg(bool own_data=false){
+    constexpr int n = 6;
+    constexpr int ld = 1;
+    double * data = static_cast<double *>(malloc(sizeof(double)*n*ld));
+    std::array<double, n> data_ {{2,4,8,5,7,13}};
+    std::copy(data_.data(), data_.end(), data);
+    return new AnyODE::DiagonalMatrix<double> {data, n, own_data};
+}
+
+TEST_CASE( "DiagonalMatrix methods", "[DiagonalMatrix]" ) {
+    const auto ori = mk_dg();
+    const int n = 6;
+    const int ld = 1;
+    REQUIRE( ori->m_nr == n );
+    REQUIRE( ori->m_nc == n );
+    REQUIRE( ori->m_ld == ld );
+    REQUIRE( ori->m_ndata == n*ld );
+    REQUIRE( ! ori->m_own_data );
+    std::array<double, n> b;
+    std::array<double, n> xref {{-7, 13, 9, -4, -0.7, 42}};
+    std::array<double, n> bref {{-14. ,   52. ,   72. ,  -20. ,   -4.9,  546.}};
+    ori->dot_vec(&xref[0], &b[0]);
+    auto dmv = *ori;
+    free(ori->m_data);
+    delete ori;
+    for (int idx=0; idx<n; ++idx){
+        REQUIRE( std::abs((b[idx] - bref[idx])/2e-13) < 1 );
+    }
+    REQUIRE( dmv.m_data != nullptr);
+    REQUIRE( dmv.m_nr == n );
+    REQUIRE( dmv.m_nc == n );
+    REQUIRE( dmv.m_ld == ld );
+    REQUIRE( dmv.m_ndata == ld*n );
+    dmv.dot_vec(&xref[0], &b[0]);
+    for (int idx=0; idx<n; ++idx){
+        REQUIRE( std::abs((b[idx] - bref[idx])/2e-13) < 1 );
+    }
+}

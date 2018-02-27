@@ -12,8 +12,6 @@ namespace AnyODE {
     }
     static constexpr int alignment_bytes_ = 64; // L1 cache line
 
-    template<typename Real_t> class MatrixBase;
-
     template<typename Real_t>
     class MatrixBase {
         void * m_array_ = nullptr;
@@ -147,6 +145,41 @@ namespace AnyODE {
             for (int ci = 0; ci < this->m_nc; ++ci)
                 for (int ri = std::max(0, ci-m_ku); ri < std::min(this->m_nr, ci+m_kl+1); ++ri)
                     (*this)(ri, ci) = scale*source(ri, ci) + ((ri == ci) ? 1 : 0);
+        }
+    };
+
+    template<typename Real_t=double>
+    struct DiagonalMatrix : public MatrixBase<Real_t> { // single diagonal
+        static constexpr bool m_colmaj = true;
+        DiagonalMatrix(Real_t * const data, int n, bool own_data=false) : MatrixBase<Real_t>(data, n, n, 1, n, own_data)
+        {
+        }
+        Real_t& operator()(int /* ri */, int ci) noexcept override final {
+            return this->m_data[ci*this->m_ld];
+        }
+        void read(const MatrixBase<Real_t>& source){
+            for (int i = 0; i < this->m_nr; ++i){
+                (*this)(i, i) = (source.guaranteed_zero_index(i, i)) ? 0 : source(i, i);
+            }
+        }
+        DiagonalMatrix(const MatrixBase<Real_t>& source) : MatrixBase<Real_t>(nullptr, source.m_nr, source.m_nr, 1, source.m_nr)
+        {
+            read(source);
+        }
+        DiagonalMatrix(const DiagonalMatrix<Real_t> &ori) : MatrixBase<Real_t>(ori)
+        {
+        }
+        bool guaranteed_zero_index(const int ri, const int ci) const final {
+            return ri - ci;
+        }
+        void dot_vec(const Real_t * const vec, Real_t * const out) final {
+            for (int i=0; i < this->m_nc; ++i){
+                out[i] = this->m_data[i]*vec[i];
+            }
+        }
+        void set_to_eye_plus_scaled_mtx(Real_t scale, const DiagonalMatrix<Real_t>& source) {
+            for (int i = 0; i < this->m_nc; ++i)
+                this->m_data[i] = 1 + scale*source.m_data[i];
         }
     };
 }
