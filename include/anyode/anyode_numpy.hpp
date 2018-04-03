@@ -218,18 +218,5 @@ namespace AnyODE {
             Py_DECREF(py_jmat);
             return status;
         }
-        AnyODE::Status banded_jac_rmaj(double t, const double * const y, const double * const fy,
-				       double * const jac, long int ldim) override {
-            npy_intp Jdims[2] { 1 + this->mlower + this->mupper, static_cast<npy_intp>(this->ny) };
-            npy_intp strides[2] { static_cast<npy_intp>(ldim*sizeof(double)), sizeof(double) };
-            const auto type_tag = NPY_DOUBLE;
-            PyObject * py_jmat = PyArray_New(
-                &PyArray_Type, 2, Jdims, type_tag, strides,
-                static_cast<void *>(const_cast<double *>(jac)), sizeof(double),
-                NPY_ARRAY_C_CONTIGUOUS | NPY_ARRAY_WRITEABLE, nullptr);
-            AnyODE::Status status = call_py_jac(t, y, fy, py_jmat, nullptr);
-            Py_DECREF(py_jmat);
-            return status;
-        }
     };
 }
