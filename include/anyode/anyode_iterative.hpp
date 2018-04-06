@@ -77,7 +77,7 @@ namespace AnyODE {
             // See 4.6.9 on page 75 in cvs_guide.pdf (Sundials 2.6.2)
             // Solves P*z = r, where P ~= I - gamma*J
             if (ewt)
-                throw std::runtime_error("Not implemented.");
+                throw std::runtime_error("Not implemented: ewt in prec_solve_left");
             m_nprec_solve++;
 
             ignore(t); ignore(fy); ignore(y);
