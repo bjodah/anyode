@@ -1,5 +1,5 @@
 #pragma once
-#include <stdlib.h>  // aligned_alloc & free
+#include <cstdlib>  // std::aligned_alloc (C++17) & std::free
 #include <stdint.h> // uintptr_t
 #include <cstring>  // std::memset
 #include <stdexcept> // std::runtime_error
@@ -17,7 +17,7 @@ namespace AnyODE {
         void * m_array_ = nullptr;
         bool m_own_array_ = false;
         Real_t * alloc_array_(int n){
-            m_array_ = aligned_alloc(alignment_bytes_, sizeof(Real_t)*n);
+            m_array_ = std::aligned_alloc(alignment_bytes_, sizeof(Real_t)*n);
             m_own_array_ = true;
             return static_cast<Real_t *>(m_array_);
         }
@@ -38,9 +38,9 @@ namespace AnyODE {
         }
         virtual ~MatrixBase(){
             if (m_own_array_ and m_array_)
-                free(m_array_);
+                std::free(m_array_);
             if (m_own_data and m_data)
-                free(m_data);
+                std::free(m_data);
         }
         virtual Real_t& operator()(int /* ri */, int /* ci */) { throw std::runtime_error("Not implemented: operator() in MatrixBase"); }
         const Real_t& operator()(int ri, int ci) const { return (*const_cast<MatrixBase<Real_t>* >(this))(ri, ci); }
