@@ -67,7 +67,7 @@ struct Info {
             const auto &k = kv.first;               \
             const auto &v = kv.second;              \
             out << k << ": [";                      \
-            for (auto it=v.begin();;){              \
+            for (auto it=v.begin();it != v.end();){ \
                 out << *it;                         \
                 ++it;                               \
                 if (it == v.end()){                 \
