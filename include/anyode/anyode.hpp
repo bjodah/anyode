@@ -62,7 +62,7 @@ struct Info {
         ANYODE_PRINT(nfo_int);
         ANYODE_PRINT(nfo_dbl);
 #undef ANYODE_PRINT
-#define ANYODE_PRINT(DICT_OF_VECTORS)             \
+#define ANYODE_PRINT(DICT_OF_VECTORS)               \
         for (const auto &kv : DICT_OF_VECTORS){     \
             const auto &k = kv.first;               \
             const auto &v = kv.second;              \
@@ -73,10 +73,10 @@ struct Info {
                 if (it == v.end()){                 \
                     break;                          \
                 } else {                            \
-                    out << ", ";                    \
+                    out << delimiter;               \
                 }                                   \
             }                                       \
-            out << "]\n";                           \
+            out << "]" << joiner;                   \
         }
         ANYODE_PRINT(nfo_vecdbl);
         ANYODE_PRINT(nfo_vecint);
