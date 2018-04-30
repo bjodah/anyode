@@ -19,6 +19,12 @@ struct Info {
     std::unordered_map<std::string, double> nfo_dbl = {};
     std::unordered_map<std::string, std::vector<double> > nfo_vecdbl = {};
     std::unordered_map<std::string, std::vector<int> > nfo_vecint = {};
+    void clear() {
+        nfo_int.clear();
+        nfo_dbl.clear();
+        nfo_vecdbl.clear();
+        nfo_vecint.clear();
+    }
     void update(
         const std::unordered_map<std::string, int> &new_int,
         const std::unordered_map<std::string, double> &new_dbl,
@@ -45,7 +51,7 @@ struct Info {
 #undef ANYODE_APPEND
     }
     template<typename stream_t>
-    void dump_ascii(stream_t& out, const std::string &joiner, const std::string &delimiter) {
+    void dump_ascii(stream_t& out, const std::string &joiner, const std::string &delimiter) const {
 #define ANYODE_PRINT(DICT_OF_SCALARS)               \
         for (const auto &kv : DICT_OF_SCALARS){     \
             const auto &k = kv.first;               \
