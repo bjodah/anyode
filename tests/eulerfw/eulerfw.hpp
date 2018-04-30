@@ -16,7 +16,7 @@ namespace eulerfw {
                 for (int j=0; j<m_ny; ++j)
                     yout[m_ny*i + j] = yout[m_ny*(i-1) + j] + (tout[i] - tout[i-1])*m_buffer[j];
             }
-            m_sys->last_integration_info_dbl["time_wall"] = std::chrono::duration<double>(
+            m_sys->current_info.nfo_dbl["time_wall"] = std::chrono::duration<double>(
                 std::chrono::high_resolution_clock::now() - t_start).count();
         }
     };

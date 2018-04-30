@@ -36,7 +36,7 @@ cdef class EulerForward:
         yout = np.empty((tout.size, y0.size))
         yout[0, :] = y0
         self.thisptr.integrate(&tout[0], tout.size, &yout[0, 0])
-        return yout, self.odesys.last_integration_info_dbl[b'time_wall']
+        return yout, self.odesys.current_info.nfo_dbl[b'time_wall']
 
     def get_ny(self):
         return self.odesys.get_ny()
