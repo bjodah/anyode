@@ -4,5 +4,5 @@ def make_ext(modname, pyxfilename):
     ext = cythonize([pyxfilename], include_path=['../../cython_def'])[0]
     ext.include_dirs.append('../../include')
     ext.include_dirs.append(np.get_include())
-    ext.extra_compile_args += ['-std=c++14']
+    ext.extra_compile_args += ['-std=c++11']
     return ext
