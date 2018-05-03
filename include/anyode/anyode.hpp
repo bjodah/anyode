@@ -66,7 +66,7 @@ struct Info {
         for (const auto &kv : DICT_OF_VECTORS){     \
             const auto &k = kv.first;               \
             const auto &v = kv.second;              \
-            out << k << ": [";                      \
+            out << k << "=[";                       \
             for (auto it=v.begin();it != v.end();){ \
                 out << *it;                         \
                 ++it;                               \
