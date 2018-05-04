@@ -66,7 +66,7 @@ struct Info {
         for (const auto &kv : DICT_OF_VECTORS){     \
             const auto &k = kv.first;               \
             const auto &v = kv.second;              \
-            out << k << "=[";                       \
+            out << k << joiner << "[";              \
             for (auto it=v.begin();it != v.end();){ \
                 out << *it;                         \
                 ++it;                               \
@@ -76,7 +76,7 @@ struct Info {
                     out << delimiter;               \
                 }                                   \
             }                                       \
-            out << "]" << joiner;                   \
+            out << "]" << delimiter;                \
         }
         ANYODE_PRINT(nfo_vecdbl);
         ANYODE_PRINT(nfo_vecint);
