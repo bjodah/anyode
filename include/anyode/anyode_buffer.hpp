@@ -8,9 +8,10 @@
 
 namespace AnyODE {
 
-#if __cplusplus >= 201402L
+#ifdef NDEBUG
+#  if __cplusplus >= 201402L
     using std::make_unique;
-#else
+#  else
     template <class T, class ...Args>
     typename std::enable_if
     <
@@ -33,8 +34,7 @@ namespace AnyODE {
         typedef typename std::remove_extent<T>::type RT;
         return std::unique_ptr<T>(new RT[n]);
     }
-#endif
-#ifdef NDEBUG
+#  endif
     template<typename T> using buffer_t = std::unique_ptr<T[]>;
     template<typename T> using buffer_ptr_t = T*;
     template<typename T> constexpr T* buffer_get_raw_ptr(buffer_t<T>& buf) {
