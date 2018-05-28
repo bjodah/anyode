@@ -4,6 +4,7 @@
 #include<memory>
 #else
 #include<vector>
+#include<limits>
 #endif
 
 namespace AnyODE {
