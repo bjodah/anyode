@@ -12,6 +12,12 @@ anyode provides C++ headers used by:
 - `pyodeint <https://github.com/bjodah/pyodeint>`_
 - `pygslodeiv2 <https://github.com/bjodah/pygslodeiv2>`_
 
+Notes
+-----
+When compiled with ``-DNDEBUG`` then ``AnyODE::buffer_factory`` will return a ``std::unique_ptr`` to an (unitizialized)
+array. When compiled without ``NDEBUG`` it will instead return a ``std::vector`` initizlied with signaling NaN.
+
+
 License
 -------
 The source code is Open Source and is released under the simplified 2-clause BSD license. See `LICENSE <LICENSE>`_ for further details.

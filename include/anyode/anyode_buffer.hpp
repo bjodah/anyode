@@ -48,7 +48,7 @@ namespace AnyODE {
     template<typename T> using buffer_t = std::vector<T>;
     template<typename T> using buffer_ptr_t = T*;
     template<typename T> inline constexpr buffer_t<T> buffer_factory(std::size_t n) {
-        return buffer_t<T>(n);
+        return buffer_t<T>(n, std::numeric_limits<double>::signaling_NaN());
     }
     template<typename T> constexpr T* buffer_get_raw_ptr(buffer_t<T>& buf) {
         return &buf[0];
