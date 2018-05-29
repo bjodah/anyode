@@ -45,6 +45,9 @@ namespace AnyODE {
     template<typename T> inline constexpr buffer_t<T> buffer_factory(std::size_t n) {
         return make_unique<T[]>(n);
     }
+    template<typename T> constexpr bool buffer_is_initialized(const buffer_t<T>& buf) {
+        return (bool)buf;
+    }
 
 #else
     template<typename T> using buffer_t = std::vector<T>;
@@ -54,6 +57,9 @@ namespace AnyODE {
     }
     template<typename T> constexpr T* buffer_get_raw_ptr(buffer_t<T>& buf) {
         return &buf[0];
+    }
+    template<typename T> constexpr bool buffer_is_initialized(const buffer_t<T>& buf) {
+        return buf.size() > 0;
     }
 #endif
 }
