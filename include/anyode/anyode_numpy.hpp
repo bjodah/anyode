@@ -193,7 +193,7 @@ struct PyOdeSys : public AnyODE::OdeSysBase<double> {
         PyObject * py_jmat = PyArray_New(
             &PyArray_Type, 2, Jdims, type_tag, strides,
             static_cast<void *>(const_cast<double *>(jac)), sizeof(double),
-            flag, nullptr);
+            flags, nullptr);
         AnyODE::Status status = call_py_jac(t, y, fy, py_jmat, dfdt);
         Py_DECREF(py_jmat);
         return status;
@@ -221,7 +221,7 @@ struct PyOdeSys : public AnyODE::OdeSysBase<double> {
         npy_intp Jdims[2] { 1 + this->mlower + this->mupper, static_cast<npy_intp>(this->ny) };
         npy_intp strides[2] { sizeof(double), static_cast<npy_intp>(ldim*sizeof(double)) };
         const auto type_tag = NPY_DOUBLE;
-        int flags = NPY_ARRAY_ALIGNED | NPY_ARRAY_WRITEABLE
+        int flags = NPY_ARRAY_ALIGNED | NPY_ARRAY_WRITEABLE;
         if (ldim == Jdims[0] ) {
             flags |= NPY_ARRAY_F_CONTIGUOUS;
         } else {
