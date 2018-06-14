@@ -183,11 +183,9 @@ struct PyOdeSys : public AnyODE::OdeSysBase<double> {
                                   double * const jac, long int ldim, double * const dfdt=nullptr) override {
         npy_intp Jdims[2] { static_cast<npy_intp>(this->ny), static_cast<npy_intp>(this->ny) };
         npy_intp strides[2] { sizeof(double), static_cast<npy_intp>(ldim*sizeof(double)) };
-        int flags = NPY_ARRAY_WRITEABLE;
+        int flags = NPY_ARRAY_ALIGNED | NPY_ARRAY_WRITEABLE;
         if (ldim == Jdims[0]) {
             flags |= NPY_ARRAY_F_CONTIGUOUS;
-        } else {
-            flags |= NPY_ARRAY_ALIGNED;
         }
         const auto type_tag = NPY_DOUBLE;
         PyObject * py_jmat = PyArray_New(
@@ -203,11 +201,9 @@ struct PyOdeSys : public AnyODE::OdeSysBase<double> {
         npy_intp Jdims[2] { static_cast<npy_intp>(this->ny), static_cast<npy_intp>(this->ny) };
         npy_intp strides[2] { static_cast<npy_intp>(ldim*sizeof(double)), sizeof(double) };
         const auto type_tag = NPY_DOUBLE;
-        int flags = NPY_ARRAY_WRITEABLE;
+        int flags = NPY_ARRAY_ALIGNED| NPY_ARRAY_WRITEABLE;
         if (ldim == Jdims[1]) {
             flags |= NPY_ARRAY_C_CONTIGUOUS;
-        } else {
-            flags |= NPY_ARRAY_ALIGNED;
         }
         PyObject * py_jmat = PyArray_New(
             &PyArray_Type, 2, Jdims, type_tag, strides,
@@ -224,8 +220,6 @@ struct PyOdeSys : public AnyODE::OdeSysBase<double> {
         int flags = NPY_ARRAY_ALIGNED | NPY_ARRAY_WRITEABLE;
         if (ldim == Jdims[0] ) {
             flags |= NPY_ARRAY_F_CONTIGUOUS;
-        } else {
-            flags |= NPY_ARRAY_ALIGNED;
         }
         PyObject * py_jmat = PyArray_New(
             &PyArray_Type, 2, Jdims, type_tag, strides,
