@@ -5,10 +5,10 @@
 #include "anyode/anyode_matrix.hpp"
 #include "anyode/anyode_buffer.hpp"
 
-#if USE_LAPACK == 1
-#include "anyode/anyode_blas_lapack.hpp"
-#else
+#if ANYODE_NO_LAPACK == 1
 #include "anyode/anyode_blasless.hpp"
+#else
+#include "anyode/anyode_blas_lapack.hpp"
 #endif
 
 namespace AnyODE {
@@ -67,6 +67,4 @@ namespace AnyODE {
         }
     };
 
-#if USE_LAPACK == 1
-#endif
 }

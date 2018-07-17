@@ -4,10 +4,10 @@
 #include <cstring>  // std::memset
 #include <stdexcept> // std::runtime_error
 
-#if USE_LAPACK == 1
-#include "anyode/anyode_blas_lapack.hpp"
-#else
+#if ANYODE_NO_LAPACK == 1
 #include "anyode/anyode_blasless.hpp"
+#else
+#include "anyode/anyode_blas_lapack.hpp"
 #endif
 
 namespace AnyODE {
@@ -35,7 +35,7 @@ namespace AnyODE {
             m_data(data ? data : alloc_array_(ndata)), m_nr(nr), m_nc(nc), m_ld(ld), m_ndata(ndata),
             m_own_data(own_data)
         {
-            if (data == nullptr and own_data)
+            if (data == nullptr && own_data)
                 throw std::runtime_error("own_data not needed for nullptr");
         }
         MatrixBase(const MatrixBase<Real_t>& ori) : MatrixBase(nullptr, ori.m_nr, ori.m_nc, ori.m_ld, ori.m_ndata) {
@@ -44,13 +44,13 @@ namespace AnyODE {
         virtual ~MatrixBase(){
             if (m_own_array_)
                 std::free(m_own_array_);
-            if (m_own_data and m_data)
+            if (m_own_data && m_data)
                 std::free(m_data);
         }
         virtual Real_t& operator()(int /* ri */, int /* ci */) { throw std::runtime_error("Not implemented: operator() in MatrixBase"); }
         const Real_t& operator()(int ri, int ci) const { return (*const_cast<MatrixBase<Real_t>* >(this))(ri, ci); }
         virtual bool valid_index(const int ri, const int ci) const {
-            return (0 <= ri) and (ri < this->m_nr) and (0 <= ci) and (ci < this->m_nc);
+            return (0 <= ri) && (ri < this->m_nr) && (0 <= ci) && (ci < this->m_nc);
         }
         virtual bool guaranteed_zero_index(int /* ri */, int /* ci */) const { throw std::runtime_error("Not implemented: guaranteed_zero_index"); };
         virtual void dot_vec(const Real_t * const, Real_t * const) { throw std::runtime_error("Not implemented: dot_vec"); };
@@ -147,7 +147,7 @@ namespace AnyODE {
     };
 
 
-#if USE_LAPACK == 1
+#if ANYODE_NO_LAPACK != 1
     constexpr int banded_padded_ld(int kl, int ku) { return 2*kl+ku+1; }
 
     template<typename Real_t = double>
@@ -179,7 +179,7 @@ namespace AnyODE {
         }
         virtual bool guaranteed_zero_index(const int ri, const int ci) const override {
             const int delta = ri - ci;
-            return (this->m_ku < delta) or (delta < -(this->m_kl));
+            return (this->m_ku < delta) || (delta < -(this->m_kl));
         }
         void dot_vec(const Real_t * const vec, Real_t * const out) override final {
             Real_t alpha=1, beta=0;
