@@ -1,5 +1,6 @@
 #pragma once
 #include <anyode/anyode_util.hpp>
+#include <anyode/anyode_decomposition.hpp>
 
 BEGIN_NAMESPACE(AnyODE)
 template<typename Real_t = double>
