@@ -2,7 +2,7 @@
 #include "catch.hpp"
 
 #if !defined(USE_LAPACK)
-#define USE_LAPACK=1
+#define USE_LAPACK 1
 #endif
 #include "anyode/anyode_decomposition_lapack.hpp"
 
