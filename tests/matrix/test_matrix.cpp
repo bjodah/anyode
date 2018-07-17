@@ -2,10 +2,6 @@
 #include "catch.hpp"
 
 #include <memory>  // std::unique_ptr
-#if !defined(USE_LAPACK)
-#define USE_LAPACK 1
-#endif
-
 #include "anyode/anyode_blas_lapack.hpp"
 #include "anyode/anyode_matrix.hpp"
 
