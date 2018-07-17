@@ -1,3 +1,4 @@
+#pragma once
 #include <vector>
 
 #if !defined(BEGIN_NAMESPACE)
@@ -13,4 +14,6 @@ void extend_vec(std::vector<T> &dest, const std::vector<T> &source){
     dest.reserve(dest.size() + std::distance(source.begin(), source.end()));
     dest.insert(dest.end(), source.begin(), source.end());
 }
+
+template<class T> void ignore( const T& ) { } // ignore unused parameter compiler warnings, or: `int /* arg */`
 END_NAMESPACE(AnyODE)

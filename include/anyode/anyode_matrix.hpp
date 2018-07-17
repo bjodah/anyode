@@ -4,7 +4,11 @@
 #include <cstring>  // std::memset
 #include <stdexcept> // std::runtime_error
 
+#if USE_LAPACK == 1
 #include "anyode/anyode_blas_lapack.hpp"
+#else
+#include "anyode/anyode_blasless.hpp"
+#endif
 
 namespace AnyODE {
     template<typename T> constexpr std::size_t n_padded(std::size_t n, int alignment_bytes){
@@ -100,6 +104,50 @@ namespace AnyODE {
         }
     };
 
+    template<typename Real_t=double>
+    struct DiagonalMatrix : public MatrixBase<Real_t> { // single diagonal
+        static constexpr bool m_colmaj = true;
+        DiagonalMatrix(Real_t * const data, int nr, int nc, int ld, bool own_data=false) :
+            MatrixBase<Real_t>(data, nr, nc, ld, ld*nc, own_data)
+        {
+        }
+        Real_t& operator()(int /* ri */, int ci) noexcept override final {
+            return this->m_data[ci*this->m_ld];
+        }
+        void read(const MatrixBase<Real_t>& source){
+            for (int i = 0; i < this->m_nc; ++i){
+                (*this)(i, i) = (source.guaranteed_zero_index(i, i)) ? 0 : source(i, i);
+            }
+        }
+        DiagonalMatrix(const MatrixBase<Real_t>& source) :
+            MatrixBase<Real_t>(nullptr, std::min(source.m_nr, source.m_nc), std::min(source.m_nr, source.m_nc),
+                               1, std::min(source.m_nr, source.m_nc))
+        {
+            read(source);
+        }
+        DiagonalMatrix(const DiagonalMatrix<Real_t> &ori) : MatrixBase<Real_t>(ori)
+        {
+        }
+        bool guaranteed_zero_index(const int ri, const int ci) const final {
+            return ri - ci;
+        }
+        void dot_vec(const Real_t * const vec, Real_t * const out) final {
+            for (int i=0; i < this->m_nc; ++i){
+                out[i] = this->m_data[i]*vec[i];
+            }
+        }
+        void set_to_eye_plus_scaled_mtx(Real_t scale, const MatrixBase<Real_t>& source) override {
+            for (int i = 0; i < this->m_nc; ++i)
+                this->m_data[i] = 1 + scale*source(i, i);
+        }
+        void set_to_eye_plus_scaled_mtx(Real_t scale, const DiagonalMatrix<Real_t>& source) {
+            for (int i = 0; i < this->m_nc; ++i)
+                this->m_data[i] = 1 + scale*source.m_data[i];
+        }
+    };
+
+
+#if USE_LAPACK == 1
     constexpr int banded_padded_ld(int kl, int ku) { return 2*kl+ku+1; }
 
     template<typename Real_t = double>
@@ -148,46 +196,5 @@ namespace AnyODE {
                     (*this)(ri, ci) = scale*source(ri, ci) + ((ri == ci) ? 1 : 0);
         }
     };
-
-    template<typename Real_t=double>
-    struct DiagonalMatrix : public MatrixBase<Real_t> { // single diagonal
-        static constexpr bool m_colmaj = true;
-        DiagonalMatrix(Real_t * const data, int nr, int nc, int ld, bool own_data=false) :
-            MatrixBase<Real_t>(data, nr, nc, ld, ld*nc, own_data)
-        {
-        }
-        Real_t& operator()(int /* ri */, int ci) noexcept override final {
-            return this->m_data[ci*this->m_ld];
-        }
-        void read(const MatrixBase<Real_t>& source){
-            for (int i = 0; i < this->m_nc; ++i){
-                (*this)(i, i) = (source.guaranteed_zero_index(i, i)) ? 0 : source(i, i);
-            }
-        }
-        DiagonalMatrix(const MatrixBase<Real_t>& source) :
-            MatrixBase<Real_t>(nullptr, std::min(source.m_nr, source.m_nc), std::min(source.m_nr, source.m_nc),
-                               1, std::min(source.m_nr, source.m_nc))
-        {
-            read(source);
-        }
-        DiagonalMatrix(const DiagonalMatrix<Real_t> &ori) : MatrixBase<Real_t>(ori)
-        {
-        }
-        bool guaranteed_zero_index(const int ri, const int ci) const final {
-            return ri - ci;
-        }
-        void dot_vec(const Real_t * const vec, Real_t * const out) final {
-            for (int i=0; i < this->m_nc; ++i){
-                out[i] = this->m_data[i]*vec[i];
-            }
-        }
-        void set_to_eye_plus_scaled_mtx(Real_t scale, const MatrixBase<Real_t>& source) override {
-            for (int i = 0; i < this->m_nc; ++i)
-                this->m_data[i] = 1 + scale*source(i, i);
-        }
-        void set_to_eye_plus_scaled_mtx(Real_t scale, const DiagonalMatrix<Real_t>& source) {
-            for (int i = 0; i < this->m_nc; ++i)
-                this->m_data[i] = 1 + scale*source.m_data[i];
-        }
-    };
+#endif
 }

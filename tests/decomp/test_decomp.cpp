@@ -1,8 +1,10 @@
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main()
 #include "catch.hpp"
 
-#include "anyode/anyode_blas_lapack.hpp"
-#include "anyode/anyode_decomposition.hpp"
+#if !defined(USE_LAPACK)
+#define USE_LAPACK 1
+#endif
+#include "anyode/anyode_decomposition_lapack.hpp"
 
 
 TEST_CASE( "SVD_solve", "[SVD]" ) {

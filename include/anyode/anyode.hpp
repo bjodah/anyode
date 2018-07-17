@@ -1,11 +1,11 @@
 #ifdef ANYODE_HPP_D47BAD58870311E6B95F2F58DEFE6E37
 
-#if ANYODE_HPP_D47BAD58870311E6B95F2F58DEFE6E37 != 16
+#if ANYODE_HPP_D47BAD58870311E6B95F2F58DEFE6E37 != 17
 #error "Multiple anyode.hpp files included with version mismatch"
 #endif
 
 #else
-#define ANYODE_HPP_D47BAD58870311E6B95F2F58DEFE6E37 16
+#define ANYODE_HPP_D47BAD58870311E6B95F2F58DEFE6E37 17
 
 #ifndef ANYODE_RESTRICT
   #if defined(__GNUC__)
@@ -127,13 +127,12 @@ public:
     }
 };
 
-template<class T> void ignore( const T& ) { } // ignore unused parameter compiler warnings, or: `int /* arg */`
 
 enum class Status : int {success = 0, recoverable_error = 1, unrecoverable_error = -1};
 
 template <typename Real_t=double>
 struct OdeSysBase {
-    int nfev=0, njev=0;
+    int nfev=0, njev=0, njvev=0;
     void * integrator = nullptr;
     void * user_data = nullptr;  // for those who don't want to subclass
     Info current_info;
@@ -194,13 +193,12 @@ struct OdeSysBase {
         throw std::runtime_error("banded_jac_cmaj not implemented.");
         return Status::unrecoverable_error;
     }
-    virtual Status jac_times_vec(const Real_t * const ANYODE_RESTRICT vec,
-                                 Real_t * const ANYODE_RESTRICT out,
-                                 Real_t t,
-                                 const Real_t * const ANYODE_RESTRICT y,
-                                 const Real_t * const ANYODE_RESTRICT fy
-                                 )
-    {
+    virtual Status jtimes(const Real_t * const ANYODE_RESTRICT vec,
+                          Real_t * const ANYODE_RESTRICT out,
+                          Real_t t,
+                          const Real_t * const ANYODE_RESTRICT y,
+                          const Real_t * const ANYODE_RESTRICT fy
+                          ) {
         ignore(vec);
         ignore(out);
         ignore(t);
