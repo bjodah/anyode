@@ -1,5 +1,5 @@
 #!/bin/bash -xeu
-cd tests/eulerfw; python -m pytest; cd -
+cd tests/eulerfw; python3 -m pytest; cd -
 for dir in tests/decomp tests/matrix; do 
     cd $dir; make -B DEFINES=-D_GLIBCXX_DEBUG; cd -
     cd $dir; make -B DEFINES=-DNDEBUG; cd -
