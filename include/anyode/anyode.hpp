@@ -127,7 +127,6 @@ public:
     }
 };
 
-template<class T> void ignore( const T& ) { } // ignore unused parameter compiler warnings, or: `int /* arg */`
 
 enum class Status : int {success = 0, recoverable_error = 1, unrecoverable_error = -1};
 

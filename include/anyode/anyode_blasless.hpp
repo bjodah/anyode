@@ -1,6 +1,8 @@
 #pragma once
 #include <cmath>
 #include <functional>
+#include <anyode/anyode_util.hpp>
+
 using namespace std;
 
 namespace AnyODE {
