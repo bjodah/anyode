@@ -1,3 +1,4 @@
+#pragma once
 #include <vector>
 
 #if !defined(BEGIN_NAMESPACE)
