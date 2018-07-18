@@ -1,9 +1,9 @@
 #pragma once
+#include <algorithm>  // std::min
 #include <cmath>
 #include <functional>
 #include <anyode/anyode_util.hpp>
 
-using namespace std;
 
 BEGIN_NAMESPACE(AnyODE)
 
