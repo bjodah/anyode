@@ -17,6 +17,9 @@ Notes
 When compiled with ``-DNDEBUG`` then ``AnyODE::buffer_factory`` will return a ``std::unique_ptr`` to an (unitizialized)
 array. When compiled without ``NDEBUG`` it will instead return a ``std::vector`` initizlied with signaling NaN.
 
+When compiled with `ANYODE_USE_LAPACK=1``, will use LAPACK routines for operations on the Jacobian matrix. Otherwise
+will default to hand-rolled equivalents.
+
 
 License
 -------
