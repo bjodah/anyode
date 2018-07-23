@@ -5,7 +5,11 @@
 #include <cstring>  // std::memset
 #include <stdexcept> // std::runtime_error
 
-#if USE_LAPACK == 1
+#ifndef ANYODE_USE_LAPACK
+#define ANYODE_USE_LAPACK 0
+#endif
+
+#if ANYODE_USE_LAPACK == 1
 #include "anyode/anyode_blas_lapack.hpp"
 #else
 #include "anyode/anyode_blasless.hpp"
@@ -173,7 +177,7 @@ namespace AnyODE {
         }
     };
 
-#if USE_LAPACK == 1
+#if ANYODE_USE_LAPACK == 1
     constexpr int banded_padded_ld(int kl, int ku) { return 2*kl+ku+1; }
 
     template<typename Real_t = double>

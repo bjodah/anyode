@@ -5,7 +5,11 @@
 #include <anyode/anyode_buffer.hpp>
 #include <anyode/anyode_matrix.hpp>
 
-#if USE_LAPACK == 1
+#ifndef ANYODE_USE_LAPACK
+#define ANYODE_USE_LAPACK 0
+#endif
+
+#if ANYODE_USE_LAPACK == 1
 #include <anyode/anyode_blas_lapack.hpp>
 #else
 #include <anyode/anyode_blasless.hpp>
