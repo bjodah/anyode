@@ -4,10 +4,10 @@
 namespace eulerfw {
 
     struct Integrator {
-        AnyODE::OdeSysBase<double> * m_sys;
+        AnyODE::OdeSysBase<double, int> * m_sys;
         const int m_ny;
         double * const m_buffer;
-        Integrator(AnyODE::OdeSysBase<double> * sys) : m_sys(sys), m_ny(m_sys->get_ny()), m_buffer(new double[m_ny]) {}
+        Integrator(AnyODE::OdeSysBase<double, int> * sys) : m_sys(sys), m_ny(m_sys->get_ny()), m_buffer(new double[m_ny]) {}
         ~Integrator() { delete []m_buffer; }
         void integrate(double * const tout, int n_tout, double * const yout) {
             auto t_start = std::chrono::high_resolution_clock::now();
