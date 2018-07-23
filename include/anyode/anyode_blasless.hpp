@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm> // std::min
 #include <cmath>
 #include <functional>
 
