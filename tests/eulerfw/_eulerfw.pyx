@@ -16,14 +16,14 @@ from anyode_numpy cimport PyOdeSys
 cdef class EulerForward:
 
     cdef Integrator * thisptr
-    cdef PyOdeSys * odesys
+    cdef PyOdeSys[double, int] * odesys
 
     def __cinit__(self, int ny, f, cb_kwargs=None, jtimes=None, quads=None, roots=None, jac=None, dx0cb=None, dx_max_cb=None):
         cdef int mlower=-1, mupper=-1, nroots=0, nquads=0, nnz=-1
-        self.odesys = new PyOdeSys(
+        self.odesys = new PyOdeSys[double, int](
             ny, <PyObject *>f, <PyObject *>jac, <PyObject *>jtimes, <PyObject *>quads, <PyObject *>roots, <PyObject *>cb_kwargs,
             mlower, mupper, nquads, nroots, <PyObject *>dx0cb, <PyObject *>dx_max_cb, nnz)
-        self.thisptr = new Integrator(<OdeSysBase[double]*>self.odesys)
+        self.thisptr = new Integrator(<OdeSysBase[double, int]*>self.odesys)
 
     def __dealloc__(self):
         del self.thisptr

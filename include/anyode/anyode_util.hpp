@@ -9,11 +9,9 @@
 #endif
 
 BEGIN_NAMESPACE(AnyODE)
-template<typename T>
-void extend_vec(std::vector<T> &dest, const std::vector<T> &source){
-    dest.reserve(dest.size() + std::distance(source.begin(), source.end()));
-    dest.insert(dest.end(), source.begin(), source.end());
-}
-
-template<class T> void ignore( const T& ) { } // ignore unused parameter compiler warnings, or: `int /* arg */`
+    template<typename T>
+    void extend_vec(std::vector <T> &dest, const std::vector <T> &source) {
+        dest.reserve(dest.size() + std::distance(source.begin(), source.end()));
+        dest.insert(dest.end(), source.begin(), source.end());
+    }
 END_NAMESPACE(AnyODE)

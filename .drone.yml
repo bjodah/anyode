@@ -4,4 +4,5 @@ build:
     - ASAN_SYMBOLIZER_PATH=/usr/lib/llvm-6.0/bin/llvm-symbolizer
     - ASAN_OPTIONS=symbolize=1
   commands:
-    - ./scripts/ci.sh
+    - ANYODE_USE_LAPACK=1 ./scripts/ci.sh
+    - ANYODE_USE_LAPACK=0 ./scripts/ci.sh

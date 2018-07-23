@@ -19,7 +19,6 @@
   #endif
 #endif
 
-
 #include <memory>
 #include <cstdlib>
 #include <string>
@@ -28,6 +27,7 @@
 #include <anyode/anyode_util.hpp>
 
 BEGIN_NAMESPACE(AnyODE)
+
 struct Info {
     std::unordered_map<std::string, int> nfo_int = {};
     std::unordered_map<std::string, double> nfo_dbl = {};
@@ -39,12 +39,11 @@ struct Info {
         nfo_vecdbl.clear();
         nfo_vecint.clear();
     }
-    void update(
-        const std::unordered_map<std::string, int> &new_int,
-        const std::unordered_map<std::string, double> &new_dbl,
-        const std::unordered_map<std::string, std::vector<double> > &new_vecdbl,
-        const std::unordered_map<std::string, std::vector<int> > &new_vecint)
-    {
+
+    void update(const std::unordered_map<std::string, int> &new_int,
+                const std::unordered_map<std::string, double> &new_dbl,
+                const std::unordered_map <std::string, std::vector<double>> &new_vecdbl,
+                const std::unordered_map <std::string, std::vector<int>> &new_vecint) {
 #define ANYODE_INCREMENT(TOKEN)                     \
         for (const auto &kv : new_ ## TOKEN){       \
             const auto &k = kv.first;               \
@@ -64,8 +63,10 @@ struct Info {
         ANYODE_APPEND(dbl);
 #undef ANYODE_APPEND
     }
+
     template<typename stream_t>
-    void dump_ascii(stream_t& out, const std::string &joiner, const std::string &delimiter) const {
+    void dump_ascii(stream_t &out, const std::string &joiner,
+                    const std::string &delimiter) const {
 #define ANYODE_PRINT(DICT_OF_SCALARS)               \
         for (const auto &kv : DICT_OF_SCALARS){     \
             const auto &k = kv.first;               \
@@ -97,7 +98,6 @@ struct Info {
     }
 };
 
-
 struct Result {
     int nt, ny, nquads, nroots;
     Info info;
@@ -105,21 +105,36 @@ private:
     std::unique_ptr<double[], decltype(std::free) *> m_data;
 public:
     Result() = delete;
-    Result(const Result&) = delete;
-    Result(int nt, int ny, int nquads, int nroots, double * data) :
-        nt(nt), ny(ny), nquads(nquads), nroots(nroots), m_data(data, std::free)
-    {
+
+    Result(const Result &) = delete;
+
+    Result(int nt, int ny, int nquads, int nroots, double *data) :
+            nt(nt), ny(ny), nquads(nquads), nroots(nroots), m_data(data,
+                                                                   std::free) {
     }
-    double &t (int tidx) { return m_data[tidx*(nquads+ny+1)]; }
-    double &y (int tidx, int yidx) { return m_data[tidx*(nquads+ny+1) + 1 + yidx]; }
-    double &q (int tidx, int qidx) { return m_data[tidx*(nquads+ny+1) + 1 + ny + qidx]; }
-    double * get_raw_ptr() const { return m_data.get(); }
+
+    double &t(int tidx) {
+        return m_data[tidx * (nquads + ny + 1)];
+    }
+
+    double &y(int tidx, int yidx) {
+        return m_data[tidx * (nquads + ny + 1) + 1 + yidx];
+    }
+
+    double &q(int tidx, int qidx) {
+        return m_data[tidx * (nquads + ny + 1) + 1 + ny + qidx];
+    }
+
+    double *get_raw_ptr() const {
+        return m_data.get();
+    }
+
     template<typename stream_t>
-    void dump_ascii(stream_t& out) {
+    void dump_ascii(stream_t &out) {
         const auto nyq = ny + nquads;
-        for (int ti=0; ti<nt; ++ti){
+        for (int ti = 0; ti < nt; ++ti) {
             out << t(ti);
-            for (int yqi=0; yqi < nyq; ++yqi){
+            for (int yqi = 0; yqi < nyq; ++yqi) {
                 out << " " << y(ti, yqi);
             }
             out << '\n';
@@ -127,16 +142,19 @@ public:
     }
 };
 
+template<class T>
+void ignore(const T &) {
+} // ignore unused parameter compiler warnings, or: `int /* arg */`
 
 enum class Status : int {success = 0, recoverable_error = 1, unrecoverable_error = -1};
 
-template <typename Real_t=double, typename Index_t=int>
+template<typename Real_t = double, typename Index_t = int>
 struct OdeSysBase {
-    int nfev=0, njev=0, njvev=0;
-    void * integrator = nullptr;
-    void * user_data = nullptr;  // for those who don't want to subclass
+    int nfev = 0, njev = 0, njvev = 0;
+    void *integrator = nullptr;
+    void *user_data = nullptr;  // for those who don't want to subclass
     Info current_info;
-    Real_t default_dx0 = 0.0;  // *may* be used by `get_dx0`, 0 signifies solver default
+    Real_t default_dx0 = 0.0; // *may* be used by `get_dx0`, 0 signifies solver default
     bool autonomous_exprs = false;
     bool use_get_dx_max = false;  // whether get_dx_max should be called
     bool record_rhs_xvals = false;
@@ -144,82 +162,126 @@ struct OdeSysBase {
     bool record_order = false;
     bool record_fpe = false;
     bool record_steps = false;
-    virtual ~OdeSysBase() {}
-    virtual int get_ny() const = 0;
-    virtual int get_mlower() const { return -1; } // -1 denotes "not banded"
-    virtual int get_mupper() const { return -1; } // -1 denotes "not banded"
-    virtual Index_t get_nnz() const { return -1; } // -1 denotes "not sparse"
-    virtual int get_nquads() const { return 0; } // Do not track quadratures by default;
-    virtual int get_nroots() const { return 0; } // Do not look for roots by default;
-    virtual Real_t get_dx0(Real_t /* t */,
-                           const Real_t * const /* y */) {
+
+    virtual ~OdeSysBase() {
+    }
+
+    virtual Index_t get_ny() const = 0;
+
+    virtual int get_mlower() const {
+        return -1;
+    } // -1 denotes "not banded"
+    virtual int get_mupper() const {
+        return -1;
+    } // -1 denotes "not banded"
+    virtual Index_t get_nnz() const {
+        return -1;
+    } // -1 denotes "not sparse"
+    virtual int get_nquads() const {
+        return 0;
+    } // Do not track quadratures by default;
+    virtual int get_nroots() const {
+        return 0;
+    } // Do not look for roots by default;
+    virtual Real_t get_dx0(Real_t /* t */, const Real_t *const /* y */) {
         return default_dx0;
     }
-    virtual Real_t get_dx_max(Real_t /* t */, const Real_t * const /* y */) {
+
+    virtual Real_t get_dx_max(Real_t /* t */, const Real_t *const /* y */) {
         return 0.0;
     }
-    virtual Status rhs(Real_t t, const Real_t * const y, Real_t * const f) = 0;
-    virtual Status quads(Real_t xval, const Real_t * const y, Real_t * const out) {
-        ignore(xval); ignore(y); ignore(out);
+
+    virtual Status rhs(Real_t t, const Real_t *const y, Real_t *const f) = 0;
+
+    virtual Status quads(Real_t xval, const Real_t *const y,
+                         Real_t *const out) {
+        ignore(xval);
+        ignore(y);
+        ignore(out);
         return Status::unrecoverable_error;
     }
-    virtual Status roots(Real_t xval, const Real_t * const y, Real_t * const out) {
-        ignore(xval); ignore(y); ignore(out);
+
+    virtual Status roots(Real_t xval, const Real_t *const y,
+                         Real_t *const out) {
+        ignore(xval);
+        ignore(y);
+        ignore(out);
         return Status::unrecoverable_error;
     }
+
     virtual Status dense_jac_cmaj(Real_t t,
-                                  const Real_t * const ANYODE_RESTRICT y,
-                                  const Real_t * const ANYODE_RESTRICT fy,
-                                  Real_t * const ANYODE_RESTRICT jac,
-                                  long int ldim,
-                                  Real_t * const ANYODE_RESTRICT dfdt=nullptr){
-        ignore(t); ignore(y); ignore(fy); ignore(jac); ignore(ldim); ignore(dfdt);
+                                  const Real_t *const ANYODE_RESTRICT y,
+                                  const Real_t *const ANYODE_RESTRICT fy,
+                                  Real_t *const ANYODE_RESTRICT jac, long int ldim,
+                                  Real_t *const ANYODE_RESTRICT dfdt = nullptr) {
+        ignore(t);
+        ignore(y);
+        ignore(fy);
+        ignore(jac);
+        ignore(ldim);
+        ignore(dfdt);
         return Status::unrecoverable_error;
     }
+
     virtual Status dense_jac_rmaj(Real_t t,
-                                  const Real_t * const ANYODE_RESTRICT y,
-                                  const Real_t * const ANYODE_RESTRICT fy,
-                                  Real_t * const ANYODE_RESTRICT jac,
-                                  long int ldim,
-                                  Real_t * const ANYODE_RESTRICT dfdt=nullptr){
-        ignore(t); ignore(y); ignore(fy); ignore(jac); ignore(ldim); ignore(dfdt);
+                                  const Real_t *const ANYODE_RESTRICT y,
+                                  const Real_t *const ANYODE_RESTRICT fy,
+                                  Real_t *const ANYODE_RESTRICT jac, long int ldim,
+                                  Real_t *const ANYODE_RESTRICT dfdt = nullptr) {
+        ignore(t);
+        ignore(y);
+        ignore(fy);
+        ignore(jac);
+        ignore(ldim);
+        ignore(dfdt);
         return Status::unrecoverable_error;
     }
+
     virtual Status banded_jac_cmaj(Real_t t,
-                                   const Real_t * const ANYODE_RESTRICT y,
-                                   const Real_t * const ANYODE_RESTRICT fy,
-                                   Real_t * const ANYODE_RESTRICT jac,
-                                   long int ldim){
-        ignore(t); ignore(y); ignore(fy); ignore(jac); ignore(ldim);
+                                   const Real_t *const ANYODE_RESTRICT y,
+                                   const Real_t *const ANYODE_RESTRICT fy,
+                                   Real_t *const ANYODE_RESTRICT jac, long int ldim) {
+        ignore(t);
+        ignore(y);
+        ignore(fy);
+        ignore(jac);
+        ignore(ldim);
         throw std::runtime_error("banded_jac_cmaj not implemented.");
         return Status::unrecoverable_error;
     }
+
     virtual Status sparse_jac_csc(Real_t t,
-                                  const Real_t * const ANYODE_RESTRICT y,
-                                  const Real_t * const ANYODE_RESTRICT fy,
-                                  Real_t * const ANYODE_RESTRICT data,
-                                  Index_t * const colptrs,
-                                  Index_t * const rowvals
-                                  ) {
-        ignore(t); ignore(y); ignore(fy); ignore(data); ignore(colptrs); ignore(rowvals);
+                                  const Real_t *const ANYODE_RESTRICT y,
+                                  const Real_t *const ANYODE_RESTRICT fy,
+                                  Real_t *const ANYODE_RESTRICT data, Index_t *const colptrs,
+                                  Index_t *const rowvals) {
+        ignore(t);
+        ignore(y);
+        ignore(fy);
+        ignore(data);
+        ignore(colptrs);
+        ignore(rowvals);
         return Status::unrecoverable_error;
     }
+
     virtual Status sparse_jac_csr(Real_t t,
-                                  const Real_t * const ANYODE_RESTRICT y,
-                                  const Real_t * const ANYODE_RESTRICT fy,
-                                  Real_t * const ANYODE_RESTRICT data,
-                                  Index_t * const rowptrs,
-                                  Index_t * const colvals
-                                  ) {
-        ignore(t); ignore(y); ignore(fy); ignore(data); ignore(rowptrs); ignore(colvals);
+                                  const Real_t *const ANYODE_RESTRICT y,
+                                  const Real_t *const ANYODE_RESTRICT fy,
+                                  Real_t *const ANYODE_RESTRICT data, Index_t *const rowptrs,
+                                  Index_t *const colvals) {
+        ignore(t);
+        ignore(y);
+        ignore(fy);
+        ignore(data);
+        ignore(rowptrs);
+        ignore(colvals);
         return Status::unrecoverable_error;
     }
-    virtual Status jtimes(const Real_t * const ANYODE_RESTRICT vec,
-                          Real_t * const ANYODE_RESTRICT out,
-                          Real_t t,
-                          const Real_t * const ANYODE_RESTRICT y,
-                          const Real_t * const ANYODE_RESTRICT fy
-                          ) {
+
+    virtual Status jtimes(const Real_t *const ANYODE_RESTRICT vec,
+                          Real_t *const ANYODE_RESTRICT out, Real_t t,
+                          const Real_t *const ANYODE_RESTRICT y,
+                          const Real_t *const ANYODE_RESTRICT fy) {
         ignore(vec);
         ignore(out);
         ignore(t);
@@ -227,13 +289,10 @@ struct OdeSysBase {
         ignore(fy);
         return Status::unrecoverable_error;
     }
-    virtual Status prec_setup(Real_t t,
-                            const Real_t * const ANYODE_RESTRICT y,
-                            const Real_t * const ANYODE_RESTRICT fy,
-                            bool jok,
-                            bool& jac_recomputed,
-                            Real_t gamma)
-    {
+
+    virtual Status prec_setup(Real_t t, const Real_t *const ANYODE_RESTRICT y,
+                              const Real_t *const ANYODE_RESTRICT fy, bool jok,
+                              bool &jac_recomputed, Real_t gamma) {
         ignore(t);
         ignore(y);
         ignore(fy);
@@ -242,15 +301,13 @@ struct OdeSysBase {
         ignore(gamma);
         return Status::unrecoverable_error;
     }
+
     virtual Status prec_solve_left(const Real_t t,
-                                   const Real_t * const ANYODE_RESTRICT y,
-                                   const Real_t * const ANYODE_RESTRICT fy,
-                                   const Real_t * const ANYODE_RESTRICT r,
-                                   Real_t * const ANYODE_RESTRICT z,
-                                   Real_t gamma,
-                                   Real_t delta,
-                                   const Real_t * const ANYODE_RESTRICT ewt)
-    {
+                                   const Real_t *const ANYODE_RESTRICT y,
+                                   const Real_t *const ANYODE_RESTRICT fy,
+                                   const Real_t *const ANYODE_RESTRICT r,
+                                   Real_t *const ANYODE_RESTRICT z, Real_t gamma, Real_t delta,
+                                   const Real_t *const ANYODE_RESTRICT ewt) {
         ignore(t);
         ignore(y);
         ignore(fy);
@@ -262,6 +319,7 @@ struct OdeSysBase {
         return Status::unrecoverable_error;
     }
 };
+
 END_NAMESPACE(AnyODE)
 
 #endif /* ANYODE_HPP_D47BAD58870311E6B95F2F58DEFE6E37 */
