@@ -1,22 +1,22 @@
 #ifdef ANYODE_HPP_D47BAD58870311E6B95F2F58DEFE6E37
 
-#if ANYODE_HPP_D47BAD58870311E6B95F2F58DEFE6E37 != 16
+#if ANYODE_HPP_D47BAD58870311E6B95F2F58DEFE6E37 != 19
 #error "Multiple anyode.hpp files included with version mismatch"
 #endif
 
 #else
-#define ANYODE_HPP_D47BAD58870311E6B95F2F58DEFE6E37 16
+#define ANYODE_HPP_D47BAD58870311E6B95F2F58DEFE6E37 19
 
 #ifndef ANYODE_RESTRICT
-#if defined(__GNUC__)
-#define ANYODE_RESTRICT __restrict__
-#elif defined(_MSC_VER) && _MSC_VER >= 1400
-#define ANYODE_RESTRICT __restrict
-#elif defined (__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
-#define ANYODE_RESTRICT restrict
-#else
-#define ANYODE_RESTRICT
-#endif
+  #if defined(__GNUC__)
+    #define ANYODE_RESTRICT __restrict__
+  #elif defined(_MSC_VER) && _MSC_VER >= 1400
+    #define ANYODE_RESTRICT __restrict
+  #elif defined (__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+    #define ANYODE_RESTRICT restrict
+  #else
+    #define ANYODE_RESTRICT
+  #endif
 #endif
 
 #include <memory>
@@ -31,9 +31,8 @@ BEGIN_NAMESPACE(AnyODE)
 struct Info {
     std::unordered_map<std::string, int> nfo_int = {};
     std::unordered_map<std::string, double> nfo_dbl = {};
-    std::unordered_map <std::string, std::vector<double>> nfo_vecdbl = {};
-    std::unordered_map <std::string, std::vector<int>> nfo_vecint = {};
-
+    std::unordered_map<std::string, std::vector<double> > nfo_vecdbl = {};
+    std::unordered_map<std::string, std::vector<int> > nfo_vecint = {};
     void clear() {
         nfo_int.clear();
         nfo_dbl.clear();
@@ -147,10 +146,7 @@ template<class T>
 void ignore(const T &) {
 } // ignore unused parameter compiler warnings, or: `int /* arg */`
 
-enum class Status
-        : int {
-    success = 0, recoverable_error = 1, unrecoverable_error = -1
-};
+enum class Status : int {success = 0, recoverable_error = 1, unrecoverable_error = -1};
 
 template<typename Real_t = double, typename Index_t = int>
 struct OdeSysBase {
