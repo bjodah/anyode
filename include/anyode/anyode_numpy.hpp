@@ -150,7 +150,7 @@ struct PyOdeSys: public AnyODE::OdeSysIterativeBase<Real_t, Index_t, DenseMatrix
         PyObject * py_out = PyArray_SimpleNewFromData(
             1, rdims, this->real_type_tag, static_cast<void*>(out));
         PyArray_CLEARFLAGS(reinterpret_cast<PyArrayObject*>(py_yarr), NPY_ARRAY_WRITEABLE);  // make yarr read-only
-        PyObject * py_arglist = Py_BuildValue("(dOO)", t, py_yarr, py_out);
+        PyObject * py_arglist = Py_BuildValue("(dOO)", (double) t, py_yarr, py_out);
         PyObject * py_result = PyEval_CallObjectWithKeywords(this->py_quads, py_arglist, this->py_kwargs);
         Py_DECREF(py_arglist);
         Py_DECREF(py_out);
