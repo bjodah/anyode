@@ -130,7 +130,7 @@ public:
 
 enum class Status : int {success = 0, recoverable_error = 1, unrecoverable_error = -1};
 
-template <typename Real_t=double, typename Index_t=int>
+template<typename Real_t=double, typename Index_t=int>
 struct OdeSysBase {
     int nfev=0, njev=0, njvev=0;
     void * integrator = nullptr;
@@ -145,7 +145,7 @@ struct OdeSysBase {
     bool record_fpe = false;
     bool record_steps = false;
     virtual ~OdeSysBase() {}
-    virtual int get_ny() const = 0;
+    virtual Index_t get_ny() const = 0;
     virtual int get_mlower() const { return -1; } // -1 denotes "not banded"
     virtual int get_mupper() const { return -1; } // -1 denotes "not banded"
     virtual Index_t get_nnz() const { return -1; } // -1 denotes "not sparse"

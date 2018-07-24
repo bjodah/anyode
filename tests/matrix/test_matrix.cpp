@@ -2,8 +2,17 @@
 #include "catch.hpp"
 
 #include <memory>  // std::unique_ptr
-#include "anyode/anyode_blas_lapack.hpp"
 #include "anyode/anyode_matrix.hpp"
+
+#ifndef ANYODE_NO_LAPACK
+#define ANYODE_NO_LAPACK 0
+#endif
+
+#if ANYODE_NO_LAPACK == 1
+#include "anyode/anyode_blasless.hpp"
+#else
+#include "anyode/anyode_blas_lapack.hpp"
+#endif
 
 
 AnyODE::DenseMatrix<double> * mk_dm(bool own_data=false){
@@ -53,6 +62,7 @@ TEST_CASE( "DenseMatrix.copy", "[DenseMatrix]" ) {
     }
 }
 
+#if ANYODE_NO_LAPACK != 1
 TEST_CASE( "banded_padded_from_dense", "[BandedMatrix]" ) {
     REQUIRE( AnyODE::banded_padded_ld(3, 5) == 3*2 + 5 + 1);
     const int n = 6;
@@ -69,7 +79,7 @@ TEST_CASE( "banded_padded_from_dense", "[BandedMatrix]" ) {
     REQUIRE( std::abs(banded.m_data[5] - 5) < 1e-15 );
     REQUIRE( std::abs(banded.m_data[6] - 1) < 1e-15 );
 }
-
+#endif
 
 AnyODE::DiagonalMatrix<double> * mk_dg(bool own_data=false){
     constexpr int n = 6;
