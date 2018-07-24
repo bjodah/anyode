@@ -1,6 +1,9 @@
 CXX ?= g++
+
+ifneq ($(ANYODE_NO_LAPACK), 1)
 LIBS ?=-llapack -lblas
-CXXFLAGS ?= -std=c++11 -Wall -Wextra -Werror -pedantic -g -ggdb
+endif
+CXXFLAGS ?= -std=c++11 -Wall -Wextra -Werror -pedantic -g -ggdb -DANYODE_NO_LAPACK=$(ANYODE_NO_LAPACK)
 CXXFLAGS += $(EXTRA_FLAGS)
 INCLUDE ?= -I../../include
 DEFINES ?=

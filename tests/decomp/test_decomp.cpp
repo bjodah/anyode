@@ -1,9 +1,17 @@
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main()
 #include "catch.hpp"
 
+#ifndef ANYODE_NO_LAPACK
+#define ANYODE_NO_LAPACK 0
+#endif
+
+#if ANYODE_NO_LAPACK == 1
+#include "anyode/anyode_decomposition.hpp"
+#else
 #include "anyode/anyode_decomposition_lapack.hpp"
+#endif
 
-
+#if ANYODE_NO_LAPACK != 1
 TEST_CASE( "SVD_solve", "[SVD]" ) {
     constexpr int n = 6;
     constexpr int ld = 8;
@@ -32,6 +40,7 @@ TEST_CASE( "SVD_solve", "[SVD]" ) {
     REQUIRE( decomp.m_condition_number < 10.0 );
 
 }
+#endif
 
 TEST_CASE( "DenseLU_solve", "[DenseLU]" ) {
     constexpr int n = 6;
@@ -60,6 +69,7 @@ TEST_CASE( "DenseLU_solve", "[DenseLU]" ) {
     }
 }
 
+#if ANYODE_NO_LAPACK != 1
 TEST_CASE( "BandedLU_solve", "[BandedLU]" ) {
     constexpr int n = 6;
     constexpr int ld = 8;
@@ -101,6 +111,7 @@ TEST_CASE( "BandedLU_solve", "[BandedLU]" ) {
         REQUIRE( std::abs((x[idx] - xref[idx])/2e-13) < 1 );
     }
 }
+#endif
 
 TEST_CASE( "DiagInv_solve", "[Diaginv]" ) {
     constexpr int n = 6;
