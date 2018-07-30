@@ -15,6 +15,7 @@ struct PyOdeSys: public AnyODE::OdeSysIterativeBase<Real_t, Index_t, DenseMatrix
     PyObject *py_rhs, *py_jac, *py_jtimes, *py_quads, *py_roots, *py_kwargs, *py_dx0cb, *py_dx_max_cb;
     int mlower, mupper, nquads, nroots;
     Index_t nnz;
+    PyArray_Descr * real_type_descr = PyArray_DescrFromType(PyOdeSys::real_type_tag);
     PyOdeSys(Index_t ny, PyObject * py_rhs, PyObject * py_jac=nullptr, PyObject * py_jtimes=nullptr,
              PyObject * py_quads=nullptr,
              PyObject * py_roots=nullptr, PyObject * py_kwargs=nullptr, int mlower=-1,
@@ -51,6 +52,7 @@ struct PyOdeSys: public AnyODE::OdeSysIterativeBase<Real_t, Index_t, DenseMatrix
         Py_XDECREF(py_quads);
         Py_XDECREF(py_roots);
         Py_XDECREF(py_kwargs);
+        Py_DECREF(real_type_descr);
     }
 
     const static NPY_TYPES index_type_tag = npy_index_type<Index_t>::type_tag;
@@ -70,10 +72,12 @@ struct PyOdeSys: public AnyODE::OdeSysIterativeBase<Real_t, Index_t, DenseMatrix
         PyObject * py_yarr = PyArray_SimpleNewFromData(
             1, dims, this->real_type_tag, static_cast<void*>(const_cast<Real_t*>(y)));
         PyArray_CLEARFLAGS(reinterpret_cast<PyArrayObject*>(py_yarr), NPY_ARRAY_WRITEABLE);  // make yarr read-only
-        PyObject * py_arglist = Py_BuildValue("(dO)", (double)(t), py_yarr);
+        PyObject * t_scalar = PyArray_Scalar(&t, this->real_type_descr, NULL);
+        PyObject * py_arglist = Py_BuildValue("(OO)", t_scalar, py_yarr);
         PyObject * py_result = PyEval_CallObjectWithKeywords(this->py_dx0cb, py_arglist, this->py_kwargs);
         Py_DECREF(py_arglist);
         Py_DECREF(py_yarr);
+        Py_DECREF(t_scalar);
         if (py_result == nullptr) {
             throw std::runtime_error("get_dx0 failed (dx0cb failed)");
         }
@@ -92,10 +96,12 @@ struct PyOdeSys: public AnyODE::OdeSysIterativeBase<Real_t, Index_t, DenseMatrix
         PyObject * py_yarr = PyArray_SimpleNewFromData(
             1, dims, this->real_type_tag, static_cast<void*>(const_cast<Real_t*>(y)));
         PyArray_CLEARFLAGS(reinterpret_cast<PyArrayObject*>(py_yarr), NPY_ARRAY_WRITEABLE);  // make yarr read-only
-        PyObject * py_arglist = Py_BuildValue("(dO)", (double)(t), py_yarr);
+        PyObject * t_scalar = PyArray_Scalar(&t, this->real_type_descr, NULL);
+        PyObject * py_arglist = Py_BuildValue("(OO)", t_scalar, py_yarr);
         PyObject * py_result = PyEval_CallObjectWithKeywords(this->py_dx_max_cb, py_arglist, this->py_kwargs);
         Py_DECREF(py_arglist);
         Py_DECREF(py_yarr);
+        Py_DECREF(t_scalar);
         if (py_result == nullptr) {
             throw std::runtime_error("get_dx_max failed (dx_max_cb failed)");
         }
@@ -134,11 +140,13 @@ struct PyOdeSys: public AnyODE::OdeSysIterativeBase<Real_t, Index_t, DenseMatrix
         PyObject * py_dydt = PyArray_SimpleNewFromData(
             1, dims, this->real_type_tag, static_cast<void*>(dydt));
         PyArray_CLEARFLAGS(reinterpret_cast<PyArrayObject*>(py_yarr), NPY_ARRAY_WRITEABLE);  // make yarr read-only
-        PyObject * py_arglist = Py_BuildValue("(dOO)", (double)(t), py_yarr, py_dydt);
+        PyObject * t_scalar = PyArray_Scalar(&t, this->real_type_descr, NULL);
+        PyObject * py_arglist = Py_BuildValue("(OOO)", t_scalar, py_yarr, py_dydt);
         PyObject * py_result = PyEval_CallObjectWithKeywords(this->py_rhs, py_arglist, this->py_kwargs);
         Py_DECREF(py_arglist);
         Py_DECREF(py_dydt);
         Py_DECREF(py_yarr);
+        Py_DECREF(t_scalar);
         this->nfev++;
         return handle_status_(py_result, "rhs");
     }
@@ -150,11 +158,13 @@ struct PyOdeSys: public AnyODE::OdeSysIterativeBase<Real_t, Index_t, DenseMatrix
         PyObject * py_out = PyArray_SimpleNewFromData(
             1, rdims, this->real_type_tag, static_cast<void*>(out));
         PyArray_CLEARFLAGS(reinterpret_cast<PyArrayObject*>(py_yarr), NPY_ARRAY_WRITEABLE);  // make yarr read-only
-        PyObject * py_arglist = Py_BuildValue("(dOO)", (double) t, py_yarr, py_out);
+        PyObject * t_scalar = PyArray_Scalar(&t, this->real_type_descr, NULL);
+        PyObject * py_arglist = Py_BuildValue("(OOO)", t_scalar, py_yarr, py_out);
         PyObject * py_result = PyEval_CallObjectWithKeywords(this->py_quads, py_arglist, this->py_kwargs);
         Py_DECREF(py_arglist);
         Py_DECREF(py_out);
         Py_DECREF(py_yarr);
+        Py_DECREF(t_scalar);
         return handle_status_(py_result, "quads");
     }
     AnyODE::Status roots(Real_t t, const Real_t * const y, Real_t * const out) override {
@@ -165,11 +175,13 @@ struct PyOdeSys: public AnyODE::OdeSysIterativeBase<Real_t, Index_t, DenseMatrix
         PyObject * py_out = PyArray_SimpleNewFromData(
             1, rdims, this->real_type_tag, static_cast<void*>(out));
         PyArray_CLEARFLAGS(reinterpret_cast<PyArrayObject*>(py_yarr), NPY_ARRAY_WRITEABLE);  // make yarr read-only
-        PyObject * py_arglist = Py_BuildValue("(dOO)", (double) t, py_yarr, py_out);
+        PyObject * t_scalar = PyArray_Scalar(&t, this->real_type_descr, NULL);
+        PyObject * py_arglist = Py_BuildValue("(OOO)", t_scalar, py_yarr, py_out);
         PyObject * py_result = PyEval_CallObjectWithKeywords(this->py_roots, py_arglist, this->py_kwargs);
         Py_DECREF(py_arglist);
         Py_DECREF(py_out);
         Py_DECREF(py_yarr);
+        Py_DECREF(t_scalar);
         return handle_status_(py_result, "roots");
     }
     AnyODE::Status call_py_jac(Real_t t, const Real_t * const y, const Real_t * const fy,
@@ -186,19 +198,21 @@ struct PyOdeSys: public AnyODE::OdeSysIterativeBase<Real_t, Index_t, DenseMatrix
         } else {
             py_fy = Py_BuildValue(""); // Py_None with incref
         }
+        PyObject * t_scalar = PyArray_Scalar(&t, this->real_type_descr, NULL);
         // Call jac with signature: (t, y[:], Jmat[:, :], dfdt[:]=None, fy[:]=None)
         // (NumPy takes cares of row vs. column major ordering. User responsible for dense/banded.)
-        PyObject * py_arglist = Py_BuildValue("(dOOOO)", (double)t, py_yarr, py_jmat, py_dfdt, py_fy);
+        PyObject * py_arglist = Py_BuildValue("(OOOOO)", t_scalar, py_yarr, py_jmat, py_dfdt, py_fy);
         PyObject * py_result = PyEval_CallObjectWithKeywords(this->py_jac, py_arglist, this->py_kwargs);
         Py_DECREF(py_arglist);
         Py_DECREF(py_fy);
         Py_DECREF(py_dfdt);
         Py_DECREF(py_yarr);
+        Py_DECREF(t_scalar);
         this->njev++;
         return handle_status_(py_result, "jac");
     }
     AnyODE::Status jtimes(const Real_t * const v, Real_t * const Jv,
-                          Real_t x, const Real_t * const y, const Real_t * const fy) override {
+                          Real_t t, const Real_t * const y, const Real_t * const fy) override {
         npy_intp ydims[1] { static_cast<npy_intp>(this->ny) };
         PyObject * py_yarr = PyArray_SimpleNewFromData(1, ydims, this->real_type_tag, const_cast<Real_t *>(y));
         PyArray_CLEARFLAGS(reinterpret_cast<PyArrayObject*>(py_yarr), NPY_ARRAY_WRITEABLE);  // make yarr read-only
@@ -212,14 +226,16 @@ struct PyOdeSys: public AnyODE::OdeSysIterativeBase<Real_t, Index_t, DenseMatrix
         } else {
             py_fy = Py_BuildValue(""); // Py_None with incref
         }
-        // Call jtimes with signature: (v[:], Jv[:], x, y[:], fy[:])
-        PyObject * py_arglist = Py_BuildValue("(OOdOO)", py_varr, py_Jv, (double) x, py_yarr, py_fy);
+        PyObject * t_scalar = PyArray_Scalar(&t, this->real_type_descr, NULL);
+        // Call jtimes with signature: (v[:], Jv[:], t, y[:], fy[:])
+        PyObject * py_arglist = Py_BuildValue("(OOOOO)", py_varr, py_Jv, t_scalar, py_yarr, py_fy);
         PyObject * py_result = PyEval_CallObjectWithKeywords(this->py_jtimes, py_arglist, this->py_kwargs);
         Py_DECREF(py_arglist);
         Py_DECREF(py_Jv);
         Py_DECREF(py_fy);
         Py_DECREF(py_yarr);
         Py_DECREF(py_varr);
+        Py_DECREF(t_scalar);
         this->njvev++;
         return handle_status_(py_result, "jtimes");
     }
@@ -272,9 +288,10 @@ struct PyOdeSys: public AnyODE::OdeSysIterativeBase<Real_t, Index_t, DenseMatrix
         PyObject * py_data = PyArray_SimpleNewFromData(1, data_dims, this->real_type_tag, static_cast<Real_t *>(data));
         PyObject * py_colptrs = PyArray_SimpleNewFromData(1, colptrs_dims, this->index_type_tag, static_cast<Index_t *>(colptrs));
         PyObject * py_rowvals = PyArray_SimpleNewFromData(1, data_dims, this->index_type_tag, static_cast<Index_t *>(rowvals));
+        PyObject * t_scalar = PyArray_Scalar(&t, this->real_type_descr, NULL);
 
         // Call sparse jac with signature: (t, y[:], data[:], colptrs[:], rowvals[:]
-        PyObject * py_arglist = Py_BuildValue("(dOOOO)", (double) t, py_yarr, py_data, py_colptrs, py_rowvals);
+        PyObject * py_arglist = Py_BuildValue("(OOOOO)", t_scalar, py_yarr, py_data, py_colptrs, py_rowvals);
         PyObject * py_result = PyEval_CallObjectWithKeywords(this->py_jac, py_arglist, this->py_kwargs);
         Py_DECREF(py_arglist);
         Py_DECREF(py_fy);
@@ -282,6 +299,7 @@ struct PyOdeSys: public AnyODE::OdeSysIterativeBase<Real_t, Index_t, DenseMatrix
         Py_DECREF(py_data);
         Py_DECREF(py_colptrs);
         Py_DECREF(py_rowvals);
+        Py_DECREF(t_scalar);
         this->njev++;
         return handle_status_(py_result, "jac");
     }
