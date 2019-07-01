@@ -1,19 +1,10 @@
-#ifdef ANYODE_HPP_D47BAD58870311E6B95F2F58DEFE6E37
-
-#if ANYODE_HPP_D47BAD58870311E6B95F2F58DEFE6E37 != 19
-#error "Multiple anyode.hpp files included with version mismatch"
-#endif
-
-#else
-#define ANYODE_HPP_D47BAD58870311E6B95F2F58DEFE6E37 19
+#pragma once
 
 #ifndef ANYODE_RESTRICT
   #if defined(__GNUC__)
     #define ANYODE_RESTRICT __restrict__
   #elif defined(_MSC_VER) && _MSC_VER >= 1400
     #define ANYODE_RESTRICT __restrict
-  #elif defined (__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
-    #define ANYODE_RESTRICT restrict
   #else
     #define ANYODE_RESTRICT
   #endif
@@ -137,7 +128,9 @@ struct OdeSysBase {
     void * user_data = nullptr;  // for those who don't want to subclass
     Info current_info;
     Real_t default_dx0 = 0.0;  // *may* be used by `get_dx0`, 0 signifies solver default
-    bool autonomous_exprs = false;
+    int autorestart_additional_steps = 500;
+    bool autorestart_relax_tolerances_last_restart {false};
+    bool autonomous_exprs = false; // autorestart mayt then internally shift t to 0 during integration.
     bool use_get_dx_max = false;  // whether get_dx_max should be called
     bool record_rhs_xvals = false;
     bool record_jac_xvals = false;
@@ -263,5 +256,3 @@ struct OdeSysBase {
     }
 };
 END_NAMESPACE(AnyODE)
-
-#endif /* ANYODE_HPP_D47BAD58870311E6B95F2F58DEFE6E37 */
