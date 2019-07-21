@@ -4,7 +4,11 @@
 #include <cstring>  // std::memset
 #include <stdexcept> // std::runtime_error
 
-#if ANYODE_NO_LAPACK == 1
+#if !defined(ANYODE_WITH_LAPACK)
+#  define ANYODE_WITH_LAPACK 1
+#endif
+
+#if ANYODE_WITH_LAPACK == 0
 #include "anyode/anyode_blasless.hpp"
 #else
 #include "anyode/anyode_blas_lapack.hpp"

@@ -18,7 +18,7 @@ When compiled with ``-DNDEBUG`` then ``AnyODE::buffer_factory`` will return a ``
 array. When compiled without ``NDEBUG`` it will instead return a ``std::vector`` initizlied with signaling NaN.
 
 By default, AnyODE uses BLAS/LAPACK for preconditioning operations on the Jacobian matrix. If you do not have
-(or do not wish to compile with) BLAS/LAPACK, ``-DANYODE_NO_LAPACK=1`` should be set, in which case built-in
+(or do not wish to compile with) BLAS/LAPACK, ``-DANYODE_WITH_LAPACK=0`` should be set, in which case built-in
 linear algebra routines will be substituted.
 
 License

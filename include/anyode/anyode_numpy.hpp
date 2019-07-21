@@ -12,26 +12,26 @@ BEGIN_NAMESPACE(AnyODE)
 template<typename Real_t = double, typename Index_t = int>
 struct PyOdeSys: public AnyODE::OdeSysIterativeBase<Real_t, Index_t, DenseMatrix<Real_t>, DenseLU<Real_t>> {
     Index_t ny;
-    PyObject *py_rhs, *py_jac, *py_jtimes, *py_quads, *py_roots, *py_kwargs, *py_dx0cb, *py_dx_max_cb;
+    PyObject *py_rhs, *py_jac, *py_jtimes, *py_quads, *py_roots, *py_kwargs, *py_dt0cb, *py_dt_max_cb;
     int mlower, mupper, nquads, nroots;
     Index_t nnz;
     PyArray_Descr * real_type_descr = PyArray_DescrFromType(PyOdeSys::real_type_tag);
     PyOdeSys(Index_t ny, PyObject * py_rhs, PyObject * py_jac=nullptr, PyObject * py_jtimes=nullptr,
              PyObject * py_quads=nullptr,
              PyObject * py_roots=nullptr, PyObject * py_kwargs=nullptr, int mlower=-1,
-             int mupper=-1, int nquads=0, int nroots=0, PyObject * py_dx0cb=nullptr,
-             PyObject * py_dx_max_cb=nullptr, Index_t nnz=-1) :
+             int mupper=-1, int nquads=0, int nroots=0, PyObject * py_dt0cb=nullptr,
+             PyObject * py_dt_max_cb=nullptr, Index_t nnz=-1) :
         ny(ny), py_rhs(py_rhs), py_jac(py_jac), py_jtimes(py_jtimes),
         py_quads(py_quads), py_roots(py_roots),
-        py_kwargs(py_kwargs), py_dx0cb(py_dx0cb), py_dx_max_cb(py_dx_max_cb),
+        py_kwargs(py_kwargs), py_dt0cb(py_dt0cb), py_dt_max_cb(py_dt_max_cb),
         mlower(mlower), mupper(mupper), nquads(nquads), nroots(nroots),
         nnz(nnz)
     {
         if (py_rhs == nullptr){
             throw std::runtime_error("py_rhs must not be nullptr");
         }
-        if ((py_dx_max_cb != nullptr) && (py_dx_max_cb != Py_None)) {
-            this->use_get_dx_max = true;
+        if ((py_dt_max_cb != nullptr) && (py_dt_max_cb != Py_None)) {
+            this->use_get_dt_max = true;
         }
         Py_INCREF(py_rhs);
         Py_XINCREF(py_jac);
@@ -64,9 +64,9 @@ struct PyOdeSys: public AnyODE::OdeSysIterativeBase<Real_t, Index_t, DenseMatrix
     Index_t get_nnz() const override { return nnz; }
     int get_nquads() const override { return nquads; }
     int get_nroots() const override { return nroots; }
-    Real_t get_dx0(Real_t t, const Real_t * const y) override {
-        if (py_dx0cb == nullptr || py_dx0cb == Py_None) {
-			return this->default_dx0;
+    Real_t get_dt0(Real_t t, const Real_t * const y) override {
+        if (py_dt0cb == nullptr || py_dt0cb == Py_None) {
+			return this->default_dt0;
         }
         npy_intp dims[1] { static_cast<npy_intp>(this->ny) } ;
         PyObject * py_yarr = PyArray_SimpleNewFromData(
@@ -74,22 +74,22 @@ struct PyOdeSys: public AnyODE::OdeSysIterativeBase<Real_t, Index_t, DenseMatrix
         PyArray_CLEARFLAGS(reinterpret_cast<PyArrayObject*>(py_yarr), NPY_ARRAY_WRITEABLE);  // make yarr read-only
         PyObject * t_scalar = PyArray_Scalar(&t, this->real_type_descr, NULL);
         PyObject * py_arglist = Py_BuildValue("(OO)", t_scalar, py_yarr);
-        PyObject * py_result = PyEval_CallObjectWithKeywords(this->py_dx0cb, py_arglist, this->py_kwargs);
+        PyObject * py_result = PyEval_CallObjectWithKeywords(this->py_dt0cb, py_arglist, this->py_kwargs);
         Py_DECREF(py_arglist);
         Py_DECREF(py_yarr);
         Py_DECREF(t_scalar);
         if (py_result == nullptr) {
-            throw std::runtime_error("get_dx0 failed (dx0cb failed)");
+            throw std::runtime_error("get_dt0 failed (dt0cb failed)");
         }
         double res = PyFloat_AsDouble(py_result);
         Py_DECREF(py_result);
         if ((PyErr_Occurred()) && (res == -1.0)) {
-            throw std::runtime_error("get_dx0 failed (value returned by dx0cb could not be converted to float)");
+            throw std::runtime_error("get_dt0 failed (value returned by dt0cb could not be converted to float)");
         }
         return res;
     }
-    Real_t get_dx_max(Real_t t, const Real_t * const y) override {
-        if (py_dx_max_cb == nullptr || py_dx_max_cb == Py_None) {
+    Real_t get_dt_max(Real_t t, const Real_t * const y) override {
+        if (py_dt_max_cb == nullptr || py_dt_max_cb == Py_None) {
             return INFINITY;
         }
         npy_intp dims[1] { static_cast<npy_intp>(this->ny) } ;
@@ -98,17 +98,17 @@ struct PyOdeSys: public AnyODE::OdeSysIterativeBase<Real_t, Index_t, DenseMatrix
         PyArray_CLEARFLAGS(reinterpret_cast<PyArrayObject*>(py_yarr), NPY_ARRAY_WRITEABLE);  // make yarr read-only
         PyObject * t_scalar = PyArray_Scalar(&t, this->real_type_descr, NULL);
         PyObject * py_arglist = Py_BuildValue("(OO)", t_scalar, py_yarr);
-        PyObject * py_result = PyEval_CallObjectWithKeywords(this->py_dx_max_cb, py_arglist, this->py_kwargs);
+        PyObject * py_result = PyEval_CallObjectWithKeywords(this->py_dt_max_cb, py_arglist, this->py_kwargs);
         Py_DECREF(py_arglist);
         Py_DECREF(py_yarr);
         Py_DECREF(t_scalar);
         if (py_result == nullptr) {
-            throw std::runtime_error("get_dx_max failed (dx_max_cb failed)");
+            throw std::runtime_error("get_dt_max failed (dt_max_cb failed)");
         }
         double res = PyFloat_AsDouble(py_result);
         Py_DECREF(py_result);
         if (PyErr_Occurred() && (res == -1.0)) {
-            throw std::runtime_error("get_dx_max failed (value returned by dx_max_cb could not be converted to float)");
+            throw std::runtime_error("get_dt_max failed (value returned by dt_max_cb could not be converted to float)");
         }
         return res;
     }
@@ -119,7 +119,7 @@ struct PyOdeSys: public AnyODE::OdeSysIterativeBase<Real_t, Index_t, DenseMatrix
             Py_DECREF(py_result);
             return AnyODE::Status::success;
         }
-        long result = PyInt_AsLong(py_result);
+        long result = PyLong_AS_LONG(py_result); //PyInt_AsLong(py_result);
         Py_DECREF(py_result);
 
 

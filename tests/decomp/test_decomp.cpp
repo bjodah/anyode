@@ -1,17 +1,17 @@
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main()
 #include "catch.hpp"
 
-#ifndef ANYODE_NO_LAPACK
-#define ANYODE_NO_LAPACK 0
+#ifndef ANYODE_WITH_LAPACK
+#define ANYODE_WITH_LAPACK 1
 #endif
 
-#if ANYODE_NO_LAPACK == 1
-#include "anyode/anyode_decomposition.hpp"
-#else
+#if ANYODE_WITH_LAPACK == 1
 #include "anyode/anyode_decomposition_lapack.hpp"
+#else
+#include "anyode/anyode_decomposition.hpp"
 #endif
 
-#if ANYODE_NO_LAPACK != 1
+#if ANYODE_WITH_LAPACK == 1
 TEST_CASE( "SVD_solve", "[SVD]" ) {
     constexpr int n = 6;
     constexpr int ld = 8;
@@ -69,7 +69,7 @@ TEST_CASE( "DenseLU_solve", "[DenseLU]" ) {
     }
 }
 
-#if ANYODE_NO_LAPACK != 1
+#if ANYODE_WITH_LAPACK == 1
 TEST_CASE( "BandedLU_solve", "[BandedLU]" ) {
     constexpr int n = 6;
     constexpr int ld = 8;

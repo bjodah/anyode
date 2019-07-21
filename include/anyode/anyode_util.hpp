@@ -8,12 +8,18 @@
 #define END_NAMESPACE(s) }
 #endif
 
-BEGIN_NAMESPACE(AnyODE)
-template<typename T>
-void extend_vec(std::vector<T> &dest, const std::vector<T> &source){
-    dest.reserve(dest.size() + std::distance(source.begin(), source.end()));
-    dest.insert(dest.end(), source.begin(), source.end());
-}
+#ifndef ANYODE_RESTRICT
+  #if defined(__GNUC__)
+    #define ANYODE_RESTRICT __restrict__
+  #elif defined(_MSC_VER) && _MSC_VER >= 1400
+    #define ANYODE_RESTRICT __restrict
+  // #elif defined (__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+  //   #define ANYODE_RESTRICT restrict
+  #else
+    #define ANYODE_RESTRICT
+  #endif
+#endif
 
-template<class T> void ignore( const T& ) { } // ignore unused parameter compiler warnings, or: `int /* arg */`
+BEGIN_NAMESPACE(AnyODE)
+template<class T> void ignore( const T& ) { } // ignore unused parameter warnings
 END_NAMESPACE(AnyODE)
