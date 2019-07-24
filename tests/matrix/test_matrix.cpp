@@ -4,14 +4,14 @@
 #include <memory>  // std::unique_ptr
 #include "anyode/anyode_matrix.hpp"
 
-#ifndef ANYODE_NO_LAPACK
-#define ANYODE_NO_LAPACK 0
+#ifndef ANYODE_WITH_LAPACK
+#define ANYODE_WITH_LAPACK 1
 #endif
 
-#if ANYODE_NO_LAPACK == 1
-#include "anyode/anyode_blasless.hpp"
-#else
+#if ANYODE_WITH_LAPACK == 1
 #include "anyode/anyode_blas_lapack.hpp"
+#else
+#include "anyode/anyode_blasless.hpp"
 #endif
 
 
@@ -62,7 +62,7 @@ TEST_CASE( "DenseMatrix.copy", "[DenseMatrix]" ) {
     }
 }
 
-#if ANYODE_NO_LAPACK != 1
+#if ANYODE_WITH_LAPACK == 1
 TEST_CASE( "banded_padded_from_dense", "[BandedMatrix]" ) {
     REQUIRE( AnyODE::banded_padded_ld(3, 5) == 3*2 + 5 + 1);
     const int n = 6;

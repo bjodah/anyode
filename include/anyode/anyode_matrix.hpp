@@ -151,7 +151,7 @@ namespace AnyODE {
     };
 
 
-#if ANYODE_NO_LAPACK != 1
+#if ANYODE_WITH_LAPACK == 1
     constexpr int banded_padded_ld(int kl, int ku) { return 2*kl+ku+1; }
 
     template<typename Real_t = double>
