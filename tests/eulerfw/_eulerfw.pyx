@@ -43,8 +43,8 @@ cdef class EulerForward:
     def get_ny(self):
         return self.odesys.get_ny()
 
-    def get_dx0(self, double t, cnp.ndarray[cnp.float64_t, ndim=1, mode='c'] y):
-        return self.odesys.get_dx0(t, &y[0])
+    def get_dt0(self, double t, cnp.ndarray[cnp.float64_t, ndim=1, mode='c'] y):
+        return self.odesys.get_dt0(t, &y[0])
 
-    def get_dx_max(self, double t, cnp.ndarray[cnp.float64_t, ndim=1, mode='c'] y):
-        return self.odesys.get_dx_max(t, &y[0])
+    def get_dt_max(self, double t, cnp.ndarray[cnp.float64_t, ndim=1, mode='c'] y):
+        return self.odesys.get_dt_max(t, &y[0])

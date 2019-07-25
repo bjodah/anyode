@@ -8,7 +8,7 @@ from libcpp cimport bool
 cdef extern from "anyode/anyode.hpp" namespace "AnyODE":
      cdef cppclass OdeSysBase[Real_t, Int_t]:
          int nfev, njev, njvev
-         bool use_get_dx_max
+         bool use_get_dt_max
 
 cdef extern from "anyode/anyode.hpp" namespace "AnyODE":
      cdef cppclass Info:

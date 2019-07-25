@@ -17,10 +17,10 @@ cdef extern from "anyode/anyode_numpy.hpp" namespace "AnyODE":
         NPY_TYPES float_type_tag
         int get_nquads()
         int get_nroots()
-        Real_t get_dx0(Real_t, Real_t *) except +
-        Real_t get_dx_max(Real_t, Real_t *) except +
+        Real_t get_dt0(Real_t, Real_t *) except +
+        Real_t get_dt_max(Real_t, Real_t *) except +
         bool autonomous_exprs
-        bool use_get_dx_max
+        bool use_get_dt_max
         bool record_rhs_xvals
         bool record_jac_xvals
         bool record_order
