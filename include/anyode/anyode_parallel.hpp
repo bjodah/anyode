@@ -7,9 +7,14 @@ namespace anyode_parallel {
         std::mutex m_lock;
     public:
         std::vector<std::pair<int, std::exception_ptr> > m_exc;
-        ThreadException(): m_exc(nullptr) {}
+        //ThreadException(): m_exc(nullptr) {}
         void rethrow() {
-            if (m_exc) std::rethrow_exception(m_exc);
+            for (const auto& idx_exc : m_exc) {
+                const auto& exc = idx_exc.second;
+                if (exc) {
+                    std::rethrow_exception(exc);
+                }
+            }
         }
         void capture_exception(int idx){
             std::unique_lock<std::mutex> guard(m_lock);
@@ -23,6 +28,6 @@ namespace anyode_parallel {
                 capture_exception(idx);
             }
         }
-        bool holds_exception() { return m_exc != nullptr; }
+        bool holds_exception() { return m_exc.size() > 0; }
     };
 }
