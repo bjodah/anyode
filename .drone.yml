@@ -1,5 +1,5 @@
 build:
-  image: bjodah/bjodahimg18dev:v1.2
+  image: bjodah/bjodahimg18dev:v1.2  # v2.1
   environment:
     - ASAN_SYMBOLIZER_PATH=/usr/lib/llvm-6.0/bin/llvm-symbolizer
     - ASAN_OPTIONS=symbolize=1

@@ -72,15 +72,14 @@ struct SVD : public DecompositionBase<Real_t> {
         Real_t alpha=1, beta=0;
         int incx=1, incy=1;
         char trans = 'T';
-        int sundials_dummy = 0;
         auto y1 = buffer_factory<Real_t>(m_view->m_nr);
         constexpr gemv_callback<Real_t> gemv{};
         gemv(&trans, &(m_view->m_nr), &(m_view->m_nr), &alpha, buffer_get_raw_ptr(m_u), &(m_ldu),
-             const_cast<Real_t*>(b), &incx, &beta, buffer_get_raw_ptr(y1), &incy, sundials_dummy);
+             const_cast<Real_t*>(b), &incx, &beta, buffer_get_raw_ptr(y1), &incy);
         for (int i=0; i < m_view->m_nr; ++i)
             y1[i] /= m_s[i];
         gemv(&trans, &(m_view->m_nc), &(m_view->m_nc), &alpha, buffer_get_raw_ptr(m_vt), &m_ldvt,
-             buffer_get_raw_ptr(y1), &incx, &beta, x, &incy, sundials_dummy);
+             buffer_get_raw_ptr(y1), &incx, &beta, x, &incy);
         return 0;
     }
 
