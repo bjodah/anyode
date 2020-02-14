@@ -88,10 +88,9 @@ namespace AnyODE {
             Real_t alpha=1, beta=0;
             int inc=1;
             char trans= m_colmaj ? 'N' : 'T';
-            int sundials_dummy = 0;
             constexpr gemv_callback<Real_t> gemv{};
             gemv(&trans, &(this->m_nr), &(this->m_nc), &alpha, this->m_data, &(this->m_ld),
-                 const_cast<Real_t *>(vec), &inc, &beta, out, &inc, sundials_dummy);
+                 const_cast<Real_t *>(vec), &inc, &beta, out, &inc);
         }
         void set_to_eye_plus_scaled_mtx(Real_t scale, const MatrixBase<Real_t>& source) override final {
             for (int imaj = 0; imaj < (m_colmaj ? this->m_nc : this->m_nr); ++imaj){
@@ -185,10 +184,9 @@ namespace AnyODE {
             Real_t alpha=1, beta=0;
             int inc=1;
             const char trans='N';
-            int sundials_dummy = 0;
             constexpr gbmv_callback<Real_t> gbmv{};
             gbmv(&trans, &(this->m_nr), &(this->m_nc), &(m_kl), &(m_ku), &alpha, this->m_data+m_kl,  // m_kl padding
-                 &(this->m_ld), const_cast<Real_t *>(vec), &inc, &beta, out, &inc, sundials_dummy);
+                 &(this->m_ld), const_cast<Real_t *>(vec), &inc, &beta, out, &inc);
         }
         void set_to_eye_plus_scaled_mtx(Real_t scale, const MatrixBase<Real_t>& source) override final {
             for (int ci = 0; ci < this->m_nc; ++ci)

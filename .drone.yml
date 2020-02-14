@@ -1,7 +1,7 @@
 build:
-  image: bjodah/bjodahimg18dev:v1.2
+  image: bjodah/bjodahimg18:v3.0
   environment:
-    - ASAN_SYMBOLIZER_PATH=/usr/lib/llvm-6.0/bin/llvm-symbolizer
+    - ASAN_SYMBOLIZER_PATH=/usr/lib/llvm-8/bin/llvm-symbolizer
     - ASAN_OPTIONS=symbolize=1
   commands:
     - ANYODE_NO_LAPACK=1 ./scripts/ci.sh
