@@ -3,7 +3,23 @@ CXX ?= g++
 ifneq ($(ANYODE_NO_LAPACK), 1)
 LIBS ?=-llapack -lblas
 endif
-CXXFLAGS ?= -std=c++11 -Wall -Wextra -Werror -pedantic -g -ggdb -DANYODE_NO_LAPACK=$(ANYODE_NO_LAPACK)
+WARNINGS ?= \
+-Wall \
+-Wextra \
+-Wredundant-decls \
+-Wcast-align \
+-Wmissing-include-dirs \
+-Wswitch-enum \
+-Wswitch-default \
+-Winvalid-pch \
+-Wredundant-decls \
+-Wformat=2 \
+-Wmissing-format-attribute \
+-Wformat-nonliteral \
+-Wodr
+# -Wmissing-declarations
+
+CXXFLAGS ?= -std=c++11 $(WARNINGS) -Werror -pedantic -g -ggdb -DANYODE_NO_LAPACK=$(ANYODE_NO_LAPACK)
 CXXFLAGS += $(EXTRA_FLAGS)
 INCLUDE ?= -I../../include
 DEFINES ?=

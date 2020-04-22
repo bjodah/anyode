@@ -1,7 +1,7 @@
 #pragma once
+#include <algorithm>  // std::fill
 #include <cstdlib>  // std::aligned_alloc (C++17) & std::free
 #include <stdint.h> // uintptr_t
-#include <cstring>  // std::memset
 #include <stdexcept> // std::runtime_error
 
 #if !defined(ANYODE_NO_LAPACK)
@@ -59,7 +59,7 @@ namespace AnyODE {
         virtual bool guaranteed_zero_index(int /* ri */, int /* ci */) const { throw std::runtime_error("Not implemented: guaranteed_zero_index"); };
         virtual void dot_vec(const Real_t * const, Real_t * const) { throw std::runtime_error("Not implemented: dot_vec"); };
         virtual void set_to_eye_plus_scaled_mtx(Real_t, const MatrixBase&) { throw std::runtime_error("Not implemented: set_to_eye_plus_scaled_mtx"); };
-        void set_to(Real_t value) noexcept { std::memset(m_data, value, m_ndata*sizeof(Real_t)); }
+        void set_to(Real_t value) noexcept { std::fill(m_data, m_data + m_ndata, value); }
     };
 
     template<typename Real_t = double>
