@@ -63,10 +63,8 @@ struct getrf_callback {
 template <typename Real_t = double>
 struct getrs_callback {
     void operator()(const char * trans, const int * n, const int * nrhs, Real_t * a,
-                    const int * lda, int * ipiv, Real_t * b, const int * ldb, int * info,
-                    int sundials__=0) const noexcept {
+                    const int * lda, int * ipiv, Real_t * b, const int * ldb, int * info) const noexcept {
         ignore(trans);
-        ignore(sundials__);
         *info = 0;
         if (*n < 0)  *info = -1;
         if (*nrhs < 0)  *info = -2;
@@ -100,10 +98,9 @@ template <typename Real_t = double>
 struct gemv_callback {
     void operator()(const char* trans, int * m, int * n, const Real_t * alpha,
                     Real_t * a, int * lda, const Real_t * x, int * incx,
-                    const Real_t * beta, Real_t * y, int * incy, int sundials__=0) const noexcept {
+                    const Real_t * beta, Real_t * y, int * incy) const noexcept {
         ignore(incx);
         ignore(incy);
-        ignore(sundials__);
         std::function<Real_t& (const int, const int)> A;
         if (*trans == 'T')
             A = [&](const int ri, const int ci) -> Real_t& { return a[ri*(*lda) + ci]; };
