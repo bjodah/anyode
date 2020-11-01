@@ -3,7 +3,7 @@ build:
   environment:
     - CC=gcc-10
     - CXX=g++-10
-    - ASAN_SYMBOLIZER_PATH=/usr/lib/llvm-8/bin/llvm-symbolizer
+    - ASAN_SYMBOLIZER_PATH=/usr/lib/llvm-11/bin/llvm-symbolizer
     - ASAN_OPTIONS=symbolize=1
   commands:
     - ANYODE_NO_LAPACK=1 ./scripts/ci.sh
