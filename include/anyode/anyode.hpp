@@ -222,9 +222,12 @@ struct OdeSysBase {
     }
     virtual Status jtimes_setup(
                           Real_t t,
-                          const Real_t * const ANYODE_RESTRICT /* y */,
-                          const Real_t * const ANYODE_RESTRICT /* fy */
+                          const Real_t * const ANYODE_RESTRICT y,
+                          const Real_t * const ANYODE_RESTRICT fy
                           ) {
+        ignore(t);
+        ignore(y);
+        ignore(fy);
         return Status::unrecoverable_error;
     }
     virtual Status prec_setup(Real_t t,
