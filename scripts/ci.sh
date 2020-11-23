@@ -3,6 +3,6 @@ cd tests/eulerfw; python3 -m pytest; cd -
 for dir in tests/decomp tests/matrix; do 
     cd $dir; make -B DEFINES="-D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC -D_FORTIFY_SOURCE=2"; cd -
     cd $dir; make -B DEFINES=-DNDEBUG; cd -
-    cd $dir; make -B CXX=clang++-10 EXTRA_FLAGS="-fsanitize=address"; cd -
-    cd $dir; make -B CXX=clang++-10 EXTRA_FLAGS="-fsanitize=address" DEFINES=-DNDEBUG; cd -
+    cd $dir; make -B CXX=clang++-11 EXTRA_FLAGS="-fsanitize=address"; cd -
+    cd $dir; make -B CXX=clang++-11 EXTRA_FLAGS="-fsanitize=address" DEFINES=-DNDEBUG; cd -
 done
