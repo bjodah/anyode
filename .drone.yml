@@ -1,10 +1,11 @@
 build:
-  image: bjodah/bjodahimg20dev:2.1.0
+  image: bjodah/bjodahimg20dev:2.1.1
   environment:
     - CC=gcc-10
     - CXX=g++-10
     - ASAN_SYMBOLIZER_PATH=/usr/lib/llvm-11/bin/llvm-symbolizer
     - ASAN_OPTIONS=symbolize=1
+    - CFLAGS="-Werror"
   commands:
     - ANYODE_NO_LAPACK=1 ./scripts/ci.sh
     - ANYODE_NO_LAPACK=0 ./scripts/ci.sh
