@@ -1,11 +1,13 @@
-build:
-  image: bjodah/bjodahimg20dev:2.1.1
-  environment:
-    - CC=gcc-10
-    - CXX=g++-10
-    - ASAN_SYMBOLIZER_PATH=/usr/lib/llvm-11/bin/llvm-symbolizer
-    - ASAN_OPTIONS=symbolize=1
-    - CFLAGS="-Werror"
-  commands:
-    - ANYODE_NO_LAPACK=1 ./scripts/ci.sh
-    - ANYODE_NO_LAPACK=0 ./scripts/ci.sh
+pipeline:
+ build:
+   image: bjodah/bjodahimg20dev:2.1.1
+   privileged: true  # or in the future(?): --cap-add SYS_PTRACE
+   environment:
+     - CC=gcc-10
+     - CXX=g++-10
+     - ASAN_SYMBOLIZER_PATH=/usr/lib/llvm-11/bin/llvm-symbolizer
+     - ASAN_OPTIONS=symbolize=1
+     - CFLAGS="-Werror -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION"
+   commands:
+     - ANYODE_NO_LAPACK=1 ./scripts/ci.sh
+     - ANYODE_NO_LAPACK=0 ./scripts/ci.sh
