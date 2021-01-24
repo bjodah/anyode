@@ -1,9 +1,4 @@
 #pragma once
-extern "C" void dgemv_(const char* trans, int* m, int* n, const double* alpha, const double* a, int* lda,
-                       const double* x, int* incx, const double* beta, double* y, int* incy);
-extern "C" void sgemv_(const char* trans, int* m, int* n, const float* alpha, const float* a, int* lda,
-                       const float* x, int* incx, const float* beta, float* y, int* incy);
-
 extern "C" void dgesvd_(const char* jobu, const char* jobvt, int* m, int* n, const double* a,
                         int* lda, double* s, double* u, int* ldu, double* vt, int* ldvt,
                         double* work, int* lwork, int* info );
@@ -11,17 +6,29 @@ extern "C" void sgesvd_(const char* jobu, const char* jobvt, int* m, int* n, con
                         int* lda, float* s, float* u, int* ldu, float* vt, int* ldvt,
                         float* work, int* lwork, int* info);
 
-extern "C" void dgetrf_(const int* dim1, const int* dim2, double* a, int* lda, int* ipiv, int* info);
-extern "C" void sgetrf_(const int* dim1, const int* dim2, float* a, int* lda, int* ipiv, int* info);
-
-extern "C" void dgetrs_(const char* trans, const int* n, const int* nrhs, double* a, const int* lda, int* ipiv, double * b, const int* ldb, int* info);
-extern "C" void sgetrs_(const char* trans, const int* n, const int* nrhs, float* a, const int* lda, int* ipiv, float * b, const int* ldb, int* info);
-
 extern "C" void dgbmv_(const char* trans, int* m, int* n, int* kl, int* ku, const double* alpha, const double* a, int* lda,
                        const double* x, int* incx, const double* beta, double* y, int* incy);
 extern "C" void sgbmv_(const char* trans, int* m, int* n, int* kl, int* ku, const float* alpha, const float* a, int* lda,
                        const float* x, int* incx, const float* beta, float* y, int* incy);
 
+#if defined(SUNDIALS_SUNLINSOL_LAPACKDENSE)
+// blas and lapack calls already declared in SUNDIALS
+#else
+extern "C" void dgemv_(const char* trans, int* m, int* n, const double* alpha, const double* a, int* lda,
+                       const double* x, int* incx, const double* beta, double* y, int* incy);
+extern "C" void sgemv_(const char* trans, int* m, int* n, const float* alpha, const float* a, int* lda,
+                       const float* x, int* incx, const float* beta, float* y, int* incy);
+
+extern "C" void dgetrf_(const int* dim1, const int* dim2, double* a, int* lda, int* ipiv, int* info);
+extern "C" void sgetrf_(const int* dim1, const int* dim2, float* a, int* lda, int* ipiv, int* info);
+
+extern "C" void dgetrs_(const char* trans, const int* n, const int* nrhs, double* a, const int* lda, int* ipiv, double * b, const int* ldb, int* info);
+extern "C" void sgetrs_(const char* trans, const int* n, const int* nrhs, float* a, const int* lda, int* ipiv, float * b, const int* ldb, int* info);
+#endif
+
+#if defined(SUNDIALS_SUNLINSOL_LAPACKBAND)
+// blas and lapack calls already declared in SUNDIALS
+#else
 extern "C" void dgbtrf_(const int* dim1, const int* dim2, const int* kl, const int* ku, double* a, int* lda, int* ipiv, int* info);
 extern "C" void sgbtrf_(const int* dim1, const int* dim2, const int* kl, const int* ku, float* a, int* lda, int* ipiv, int* info);
 
@@ -29,7 +36,7 @@ extern "C" void dgbtrs_(const char* trans, const int* n, const int* kl, const in
                         const int* lda, int* ipiv, double * b, const int* ldb, int *info);
 extern "C" void sgbtrs_(const char* trans, const int* n, const int* kl, const int* ku, const int* nrhs, float* a,
                         const int* lda, int* ipiv, float * b, const int* ldb, int*info);
-
+#endif
 
 #define PROXY_DEFINE(CLS_NAME)                                     \
     template<typename T> struct CLS_NAME ## _callback;
