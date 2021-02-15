@@ -12,7 +12,8 @@ BEGIN_NAMESPACE(AnyODE)
 template<typename Real_t = double, typename Index_t = int>
 struct PyOdeSys: public AnyODE::OdeSysIterativeBase<Real_t, Index_t, DenseMatrix<Real_t>, DenseLU<Real_t>> {
     Index_t ny;
-    PyObject *py_rhs, *py_jac, *py_jtimes, *py_quads, *py_roots, *py_kwargs, *py_dx0cb, *py_dx_max_cb;
+    PyObject *py_rhs, *py_jac, *py_jtimes, *py_quads, *py_roots, *py_kwargs, *py_dx0cb, *py_dx_max_cb,
+        *py_prec_setup, *py_prec_solve_left;
     int mlower, mupper, nquads, nroots;
     Index_t nnz;
     PyArray_Descr * real_type_descr = PyArray_DescrFromType(PyOdeSys::real_type_tag);
@@ -20,12 +21,13 @@ struct PyOdeSys: public AnyODE::OdeSysIterativeBase<Real_t, Index_t, DenseMatrix
              PyObject * py_quads=nullptr,
              PyObject * py_roots=nullptr, PyObject * py_kwargs=nullptr, int mlower=-1,
              int mupper=-1, int nquads=0, int nroots=0, PyObject * py_dx0cb=nullptr,
-             PyObject * py_dx_max_cb=nullptr, Index_t nnz=-1) :
+             PyObject * py_dx_max_cb=nullptr, Index_t nnz=-1,
+             PyObject * py_prec_setup=nullptr, PyObject * py_prec_solve_left=nullptr) :
         ny(ny), py_rhs(py_rhs), py_jac(py_jac), py_jtimes(py_jtimes),
         py_quads(py_quads), py_roots(py_roots),
         py_kwargs(py_kwargs), py_dx0cb(py_dx0cb), py_dx_max_cb(py_dx_max_cb),
         mlower(mlower), mupper(mupper), nquads(nquads), nroots(nroots),
-        nnz(nnz)
+        nnz(nnz), py_prec_setup(py_prec_setup), py_prec_solve_left(py_prec_solve_left)
     {
         if (py_rhs == nullptr){
             throw std::runtime_error("py_rhs must not be nullptr");
@@ -44,6 +46,8 @@ struct PyOdeSys: public AnyODE::OdeSysIterativeBase<Real_t, Index_t, DenseMatrix
         } else {
             Py_XINCREF(py_kwargs);
         }
+        Py_XINCREF(py_prec_setup);
+        Py_XINCREF(py_prec_solve_left);
     }
     virtual ~PyOdeSys() {
         Py_DECREF(py_rhs);
@@ -53,6 +57,8 @@ struct PyOdeSys: public AnyODE::OdeSysIterativeBase<Real_t, Index_t, DenseMatrix
         Py_XDECREF(py_roots);
         Py_XDECREF(py_kwargs);
         Py_DECREF(real_type_descr);
+        Py_XDECREF(py_prec_setup);
+        Py_XDECREF(py_prec_solve_left);
     }
 
     const static NPY_TYPES index_type_tag = npy_index_type<Index_t>::type_tag;
@@ -121,7 +127,6 @@ struct PyOdeSys: public AnyODE::OdeSysIterativeBase<Real_t, Index_t, DenseMatrix
         }
         long result = PyInt_AsLong(py_result);
         Py_DECREF(py_result);
-
 
         if ((PyErr_Occurred() && (result == -1)) ||
             (result == static_cast<long int>(AnyODE::Status::unrecoverable_error))) {
@@ -238,6 +243,124 @@ struct PyOdeSys: public AnyODE::OdeSysIterativeBase<Real_t, Index_t, DenseMatrix
         Py_DECREF(t_scalar);
         this->njvev++;
         return handle_status_(py_result, "jtimes");
+    }
+    AnyODE::Status prec_setup(Real_t t,
+                              const Real_t * const ANYODE_RESTRICT y,
+                              const Real_t * const ANYODE_RESTRICT fy,
+                              bool jok,
+                              bool& jac_recomputed,
+                              Real_t gamma) override {
+        npy_intp ydims[1] { static_cast<npy_intp>(this->ny) };
+        PyObject * py_yarr = PyArray_SimpleNewFromData(1, ydims, this->real_type_tag, const_cast<Real_t *>(y));
+        PyArray_CLEARFLAGS(reinterpret_cast<PyArrayObject*>(py_yarr), NPY_ARRAY_WRITEABLE);  // make yarr read-only
+        PyObject * py_fy;
+        if (fy) {
+            py_fy = PyArray_SimpleNewFromData(1, ydims, this->real_type_tag, const_cast<Real_t *>(fy));
+            PyArray_CLEARFLAGS(reinterpret_cast<PyArrayObject*>(py_fy), NPY_ARRAY_WRITEABLE);  // make fy read-only
+        } else {
+            py_fy = Py_BuildValue(""); // Py_None with incref
+        }
+        PyObject * py_jok;
+        if (jok) {
+            Py_INCREF(Py_True);
+            py_jok = Py_True;
+        } else {
+            Py_DECREF(Py_False);
+            py_jok = Py_False;
+        }
+        PyObject * t_scalar = PyArray_Scalar(&t, this->real_type_descr, NULL);
+        PyObject * py_gamma = PyArray_Scalar(&gamma, this->real_type_descr, NULL);
+        // Call prec_setup with signature: (t, y[:], fy[:], jok, gamma) -> (status, jac_recomputed)
+        PyObject * py_arglist = Py_BuildValue("(OOOOO)", t_scalar, py_yarr, py_fy, py_jok, py_gamma);
+        PyObject * py_result = PyEval_CallObjectWithKeywords(this->py_prec_setup, py_arglist, this->py_kwargs);
+        Py_DECREF(py_arglist);
+        Py_DECREF(py_jok);
+        Py_DECREF(py_fy);
+        Py_DECREF(py_yarr);
+        Py_DECREF(py_gamma);
+        Py_DECREF(t_scalar);
+        if (py_result == nullptr){
+            throw std::runtime_error("prec_setup failed");
+        }
+        AnyODE::Status status;
+        PyObject * zero = PyLong_FromLong(0);
+        PyObject * one = PyLong_FromLong(1);
+        PyObject * py_status = PyObject_GetItem(py_result, zero);
+        if (py_status == nullptr) {
+            throw std::runtime_error("prec_setup needs to return 2 integers as a tuple");
+        } else {
+            long st = PyLong_AsLong(py_status);
+            if (st == -1 && PyErr_Occurred()) {
+                throw std::runtime_error("status (first returned item) needs to be an integer");
+            } else {
+                if (st == static_cast<int>(AnyODE::Status::success)) {
+                    status = AnyODE::Status::success;
+                } else if (st == static_cast<int>(AnyODE::Status::recoverable_error)) {
+                    status = AnyODE::Status::recoverable_error;
+                } else if (st == static_cast<int>(AnyODE::Status::unrecoverable_error)) {
+                    status = AnyODE::Status::unrecoverable_error;
+                } else {
+                    throw std::runtime_error("Unknown status code (first returned item) returned from prec_setup");
+                }
+            }
+        }
+        Py_DECREF(py_status);
+        Py_DECREF(zero);
+        PyObject * py_jac_recomputed = PyObject_GetItem(py_result, one);
+        if (py_jac_recomputed == nullptr) {
+            throw std::runtime_error("prec_setup needs to return 2 integers as a tuple");
+        } else {
+            jac_recomputed = PyObject_IsTrue(py_jac_recomputed);
+        }
+        Py_DECREF(py_jac_recomputed);
+        Py_DECREF(one);
+        Py_DECREF(py_result);
+        return status;
+    }
+    AnyODE::Status prec_solve_left(const Real_t t,
+                                   const Real_t * const ANYODE_RESTRICT y,
+                                   const Real_t * const ANYODE_RESTRICT fy,
+                                   const Real_t * const ANYODE_RESTRICT r,
+                                   Real_t * const ANYODE_RESTRICT z,
+                                   Real_t gamma,
+                                   Real_t delta,
+                                   const Real_t * const ANYODE_RESTRICT ewt)
+    {
+        PyObject * t_scalar = PyArray_Scalar(&t, this->real_type_descr, NULL);
+        PyObject * py_gamma = PyArray_Scalar(&gamma, this->real_type_descr, NULL);
+        PyObject * py_delta = PyArray_Scalar(&gamma, this->real_type_descr, NULL);
+        npy_intp ydims[1] { static_cast<npy_intp>(this->ny) };
+        PyObject * py_y_arr = PyArray_SimpleNewFromData(1, ydims, this->real_type_tag, const_cast<Real_t *>(y));
+        PyArray_CLEARFLAGS(reinterpret_cast<PyArrayObject*>(py_y_arr), NPY_ARRAY_WRITEABLE);  // make read-only
+        PyObject * py_fy;
+        if (fy) {
+            py_fy = PyArray_SimpleNewFromData(1, ydims, this->real_type_tag, const_cast<Real_t *>(fy));
+            PyArray_CLEARFLAGS(reinterpret_cast<PyArrayObject*>(py_fy), NPY_ARRAY_WRITEABLE);  // make read-only
+        } else {
+            py_fy = Py_BuildValue(""); // Py_None with incref
+        }
+        PyObject * py_r_arr = PyArray_SimpleNewFromData(1, ydims, this->real_type_tag, const_cast<Real_t *>(y));
+        PyArray_CLEARFLAGS(reinterpret_cast<PyArrayObject*>(py_r_arr), NPY_ARRAY_WRITEABLE);  // make read-only
+        PyObject * py_z_arr = PyArray_SimpleNewFromData(1, ydims, this->real_type_tag, const_cast<Real_t *>(y));
+        PyObject * py_ewt;
+        if (ewt) {
+            py_ewt = PyArray_SimpleNewFromData(1, ydims, this->real_type_tag, const_cast<Real_t *>(ewt));
+            PyArray_CLEARFLAGS(reinterpret_cast<PyArrayObject*>(py_ewt), NPY_ARRAY_WRITEABLE);  // make read-only
+        } else {
+            py_ewt = Py_BuildValue(""); // Py_None with incref
+        }
+        PyObject * py_arglist = Py_BuildValue("(OOOOOOOO)", t_scalar, py_y_arr, py_fy, py_r_arr, py_z_arr, py_gamma, py_delta, py_ewt);
+        PyObject * py_result = PyEval_CallObjectWithKeywords(this->py_prec_setup, py_arglist, this->py_kwargs);
+        Py_DECREF(py_arglist);
+        Py_DECREF(t_scalar);
+        Py_DECREF(py_gamma);
+        Py_DECREF(py_delta);
+        Py_DECREF(py_y_arr);
+        Py_DECREF(py_fy);
+        Py_DECREF(py_r_arr);
+        Py_DECREF(py_z_arr);
+        Py_DECREF(py_ewt);
+        return status;
     }
     AnyODE::Status dense_jac_cmaj(Real_t t, const Real_t * const y, const Real_t * const fy,
                                   Real_t * const jac, long int ldim, Real_t * const dfdt=nullptr) override {
