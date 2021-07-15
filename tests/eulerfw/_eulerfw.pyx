@@ -1,7 +1,7 @@
 # -*- coding: utf-8; mode: cython -*-
 # cython: language_level = 3str
 # distutils: language = c++
-# distutils: extra_compile_args = -std=c++11
+# distutils: extra_compile_args = -std=c++17
 
 from cpython.ref cimport PyObject
 cimport numpy as cnp

@@ -20,7 +20,7 @@ WARNINGS ?= \
 -Wodr
 # -Wmissing-declarations
 
-CXXFLAGS ?= -std=c++11 $(WARNINGS) -Werror -pedantic -g -ggdb -DANYODE_NO_LAPACK=$(ANYODE_NO_LAPACK)
+CXXFLAGS ?= -std=c++17 $(WARNINGS) -Werror -pedantic -g -ggdb -DANYODE_NO_LAPACK=$(ANYODE_NO_LAPACK)
 CXXFLAGS += $(EXTRA_FLAGS)
 INCLUDE ?= -I../../include
 DEFINES ?=
