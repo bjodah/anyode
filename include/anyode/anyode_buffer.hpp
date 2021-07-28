@@ -56,7 +56,7 @@ namespace AnyODE {
         return buffer_t<T>(n, std::numeric_limits<T>::signaling_NaN());
     }
     template<typename T> constexpr T* buffer_get_raw_ptr(buffer_t<T>& buf) {
-        return &buf[0];
+        return buf.data();
     }
     template<typename T> constexpr bool buffer_is_initialized(const buffer_t<T>& buf) {
         return buf.size() > 0;
