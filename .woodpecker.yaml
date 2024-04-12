@@ -2,13 +2,17 @@ when:
   - event: [pull_request, tag, cron, push]
 
 steps:
-  - name: run-tests
+  - name: run-tests-without-lapack
     image: cont-reg.bjodah.se:443/bjodah/triceratops-3:14
-#    privileged: true  # or in the future(?): --cap-add SYS_PTRACE
     environment:
-      - CC=gcc
-      - CXX=g++
-      - CFLAGS=-Werror -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION
+      - ANYODE_NO_LAPACK=0
     commands:
-      - ANYODE_NO_LAPACK=1 ./scripts/ci.sh
-      - ANYODE_NO_LAPACK=0 ./scripts/ci.sh
+      -  ./scripts/ci.sh
+
+  - name: run-tests-with-lapack
+    image: cont-reg.bjodah.se:443/bjodah/triceratops-3:14
+    environment:
+      - ANYODE_NO_LAPACK=1
+    commands:
+      -  ./scripts/ci.sh
+      

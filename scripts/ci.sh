@@ -1,6 +1,9 @@
 #!/bin/bash -xeu
 
 export PATH=:/opt-2/gcc-13/bin:$PATH
+export CC=gcc
+export CXX=g++
+export CFLAGS="-Werror -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION"
 
 
 for dir in tests/decomp tests/matrix; do 
