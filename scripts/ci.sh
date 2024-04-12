@@ -1,6 +1,6 @@
 #!/bin/bash -xeu
 
-export PATH=$(compgen -G "/opt-3/cpython-3*-apt-deb/bin"):/opt-2/gcc-13/bin:$PATH
+export PATH=$(compgen -G "/opt-3/cpython-v3.11*-apt-deb/bin"):/opt-2/gcc-13/bin:$PATH
 
 cd tests/midpoint; if [ -d ./build/ ]; then rm -r ./build/; fi; python3 -m pytest -v; cd -
 cd tests/eulerfw;  if [ -d ./build/ ]; then rm -r ./build/; fi; python3 -m pytest -v; cd -
