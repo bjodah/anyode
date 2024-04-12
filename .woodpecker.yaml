@@ -6,8 +6,8 @@ steps:
     image: cont-reg.bjodah.se:443/bjodah/triceratops-3:14
 #    privileged: true  # or in the future(?): --cap-add SYS_PTRACE
     environment:
-      - CC=gcc-13
-      - CXX=g++-13
+      - CC=gcc
+      - CXX=g++
       - CFLAGS=-Werror -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION
     commands:
       - ANYODE_NO_LAPACK=1 ./scripts/ci.sh
