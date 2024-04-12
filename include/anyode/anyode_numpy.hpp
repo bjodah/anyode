@@ -56,7 +56,7 @@ struct PyOdeSys: public AnyODE::OdeSysIterativeBase<Real_t, Index_t, DenseMatrix
     }
 
     const static NPY_TYPES index_type_tag = npy_index_type<Index_t>::type_tag;
-	const static NPY_TYPES real_type_tag = npy_real_type<Real_t>::type_tag;
+    const static NPY_TYPES real_type_tag =  npy_real_type<Real_t  >::type_tag;
 
     Index_t get_ny() const override { return ny; }
     int get_mlower() const override { return mlower; }
