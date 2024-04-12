@@ -1,7 +1,8 @@
 CXX ?= g++
 
-ifneq ($(ANYODE_NO_LAPACK), 1)
-LIBS ?=-llapack -lblas
+LAPCK_LIBS ?= -llapack -lblas
+eq ($(ANYODE_NO_LAPACK), 1)
+LDLIBS += $(LAPACK_LIBS)
 endif
 
 WARNINGS ?= \
@@ -36,7 +37,7 @@ clean:
 	rm test_decomp
 
 test_%: test_%.cpp ../../include/anyode/anyode_matrix.hpp doctest.h
-	$(CXX) $(CXXFLAGS) $(INCLUDE) $(DEFINES) -o $@ $< $(LIBS)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(INCLUDE) $(DEFINES) -o $@ $< $(LDLIBS)
 
 doctest.h: ../doctest.h.bz2
 	bzcat $< >$@
