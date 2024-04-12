@@ -32,11 +32,11 @@ test: test_matrix
 	./test_matrix --abortx 1
 
 clean:
-	rm catch.hpp
+	rm doctest.h
 	rm test_decomp
 
-test_%: test_%.cpp ../../include/anyode/anyode_matrix.hpp catch.hpp
+test_%: test_%.cpp ../../include/anyode/anyode_matrix.hpp doctest.h
 	$(CXX) $(CXXFLAGS) $(INCLUDE) $(DEFINES) -o $@ $< $(LIBS)
 
-catch.hpp: ../catch.hpp.bz2
+doctest.h: ../doctest.h.bz2
 	bzcat $< >$@

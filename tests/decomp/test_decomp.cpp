@@ -1,5 +1,5 @@
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main()
-#include "catch.hpp"
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "doctest.h"
 
 #ifndef ANYODE_NO_LAPACK
 #define ANYODE_NO_LAPACK 0
