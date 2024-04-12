@@ -39,7 +39,7 @@ struct PyOdeSys: public AnyODE::OdeSysIterativeBase<Real_t, Index_t, DenseMatrix
         Py_XINCREF(py_quads);
         Py_XINCREF(py_roots);
         if (py_kwargs == Py_None){
-            Py_DECREF(Py_None);
+            //Py_DECREF(Py_None);  <-- we must not decrement Py_None here
             this->py_kwargs = nullptr;
         } else {
             Py_XINCREF(py_kwargs);

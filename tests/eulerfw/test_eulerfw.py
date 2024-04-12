@@ -27,7 +27,7 @@ def test_sine():
     yref0 = A*np.sin(k*tout)
     yref1 = A*np.cos(k*tout)*k
     assert np.allclose(np.vstack([yref0, yref1]).T, yout, atol=0.05)
-    assert 1e-9 < time_wall < 2.0  # takes about 20 ms on modern 2012 desktop computer
+    assert 1e-9 < time_wall < 2.0  # takes about 20 ms on 2012 desktop computer
 
 if __name__ == '__main__':
     test_sine()
