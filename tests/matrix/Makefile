@@ -1,7 +1,7 @@
 CXX ?= g++
 
 LAPCK_LIBS ?= -llapack -lblas
-eq ($(ANYODE_NO_LAPACK), 1)
+ifneq ($(ANYODE_NO_LAPACK), 1)
 LDLIBS += $(LAPACK_LIBS)
 endif
 
