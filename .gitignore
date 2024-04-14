@@ -1,6 +1,6 @@
 **.pyc
 **.cache/
-**/catch.hpp
+**/doctest.h
 tests/eulerfw/_eulerfw.cpp
 tests/eulerfw/_eulerfw.pyxbldc
 tests/decomp/test_decomp

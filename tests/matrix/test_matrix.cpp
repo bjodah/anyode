@@ -12,6 +12,7 @@
 #include "anyode/anyode_blasless.hpp"
 #else
 #include "anyode/anyode_blas_lapack.hpp"
+#include <array>
 #endif
 
 

@@ -9,6 +9,7 @@
 #include "anyode/anyode_decomposition.hpp"
 #else
 #include "anyode/anyode_decomposition_lapack.hpp"
+#include <array>
 #endif
 
 #if ANYODE_NO_LAPACK != 1
