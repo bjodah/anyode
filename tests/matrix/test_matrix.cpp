@@ -1,5 +1,5 @@
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main()
-#include "catch.hpp"
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "doctest.h"
 
 #include <memory>  // std::unique_ptr
 #include "anyode/anyode_matrix.hpp"
@@ -12,6 +12,7 @@
 #include "anyode/anyode_blasless.hpp"
 #else
 #include "anyode/anyode_blas_lapack.hpp"
+#include <array>
 #endif
 
 
@@ -32,7 +33,7 @@ AnyODE::DenseMatrix<double> * mk_dm(bool own_data=false){
     return new AnyODE::DenseMatrix<double> {data, n, n, ld, colmaj, own_data};
 }
 
-TEST_CASE( "DenseMatrix.copy", "[DenseMatrix]" ) {
+TEST_CASE( "DenseMatrix.copy" ) {
     const auto ori = mk_dm();
     const int n = 6;
     const int ld = 8;
@@ -63,7 +64,7 @@ TEST_CASE( "DenseMatrix.copy", "[DenseMatrix]" ) {
 }
 
 #if ANYODE_NO_LAPACK != 1
-TEST_CASE( "banded_padded_from_dense", "[BandedMatrix]" ) {
+TEST_CASE( "banded_padded_from_dense" ) {
     REQUIRE( AnyODE::banded_padded_ld(3, 5) == 3*2 + 5 + 1);
     const int n = 6;
     const auto dense = mk_dm(true);
@@ -90,7 +91,7 @@ AnyODE::DiagonalMatrix<double> * mk_dg(bool own_data=false){
     return new AnyODE::DiagonalMatrix<double> {data, n, n, 1, own_data};
 }
 
-TEST_CASE( "DiagonalMatrix methods", "[DiagonalMatrix]" ) {
+TEST_CASE( "DiagonalMatrix methods" ) {
     const auto ori = mk_dg();
     const int n = 6;
     const int ld = 1;

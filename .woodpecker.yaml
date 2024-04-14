@@ -1,0 +1,18 @@
+when:
+  - event: [pull_request, tag, cron, push]
+
+steps:
+  - name: run-tests-without-lapack
+    image: cont-reg.bjodah.se:443/bjodah/triceratops-3:14
+    environment:
+      - ANYODE_NO_LAPACK=0
+    commands:
+      -  ./scripts/ci.sh
+
+  - name: run-tests-with-lapack
+    image: cont-reg.bjodah.se:443/bjodah/triceratops-3:14
+    environment:
+      - ANYODE_NO_LAPACK=1
+    commands:
+      -  ./scripts/ci.sh
+      

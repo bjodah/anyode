@@ -1,5 +1,5 @@
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main()
-#include "catch.hpp"
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include "doctest.h"
 
 #ifndef ANYODE_NO_LAPACK
 #define ANYODE_NO_LAPACK 0
@@ -9,10 +9,11 @@
 #include "anyode/anyode_decomposition.hpp"
 #else
 #include "anyode/anyode_decomposition_lapack.hpp"
+#include <array>
 #endif
 
 #if ANYODE_NO_LAPACK != 1
-TEST_CASE( "SVD_solve", "[SVD]" ) {
+TEST_CASE( "SVD_solve" ) {
     constexpr int n = 6;
     constexpr int ld = 8;
     std::array<double, n*ld> data {{  // column major
@@ -42,7 +43,7 @@ TEST_CASE( "SVD_solve", "[SVD]" ) {
 }
 #endif
 
-TEST_CASE( "DenseLU_solve", "[DenseLU]" ) {
+TEST_CASE( "DenseLU_solve" ) {
     constexpr int n = 6;
     constexpr int ld = 8;
     std::array<double, n*ld> data {{  // column major
@@ -70,7 +71,7 @@ TEST_CASE( "DenseLU_solve", "[DenseLU]" ) {
 }
 
 #if ANYODE_NO_LAPACK != 1
-TEST_CASE( "BandedLU_solve", "[BandedLU]" ) {
+TEST_CASE( "BandedLU_solve" ) {
     constexpr int n = 6;
     constexpr int ld = 8;
     constexpr int nd = 2;
@@ -113,7 +114,7 @@ TEST_CASE( "BandedLU_solve", "[BandedLU]" ) {
 }
 #endif
 
-TEST_CASE( "DiagInv_solve", "[Diaginv]" ) {
+TEST_CASE( "DiagInv_solve" ) {
     constexpr int n = 6;
     constexpr int ld = 1;
     std::array<double, n*ld> data {{2,4,8,5,7,13}};
