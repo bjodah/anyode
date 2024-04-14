@@ -1,8 +1,8 @@
 anyode
 ======
 
-.. image:: http://hera.physchem.kth.se:9090/api/badges/bjodah/anyode/status.svg
-   :target: http://hera.physchem.kth.se:9090/bjodah/anyode
+.. image:: http://hackspett.bjodah.se/api/badges/4/status.svg
+   :target: http://hackspett.bjodah.se/repos/4
    :alt: Build status
 
 anyode provides C++ headers used by:
@@ -30,4 +30,4 @@ Author
 ------
 Björn I. Dahlgren, contact:
 
-- gmail address: bjodah
+- gmail address: bjodah+anyode
