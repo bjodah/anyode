@@ -39,7 +39,7 @@ def test_sine(params):
         assert np.allclose(yref, yout, atol=0.1)
         assert 1e-9 < time_wall < 0.050  # takes about <1 ms on 2023 desktop computer
     gc.collect()
-    nNone -= sys.getrefcount(None)
+    nNone = sys.getrefcount(None) - nNone
     assert -nIter//10 < nNone < nIter//10
 
 

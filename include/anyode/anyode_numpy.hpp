@@ -38,12 +38,14 @@ struct PyOdeSys: public AnyODE::OdeSysIterativeBase<Real_t, Index_t, DenseMatrix
         Py_XINCREF(py_jtimes);
         Py_XINCREF(py_quads);
         Py_XINCREF(py_roots);
-        if (py_kwargs == Py_None){
-            //Py_DECREF(Py_None);  <-- we must not decrement Py_None here
+        if (py_kwargs == nullptr || py_kwargs == Py_None) {
             this->py_kwargs = nullptr;
         } else {
-            Py_XINCREF(py_kwargs);
+            PyDict_Check(this->py_kwargs);
         }
+        Py_XINCREF(py_kwargs);
+        Py_XINCREF(py_dx0cb);
+        Py_XINCREF(py_dx_max_cb);
     }
     virtual ~PyOdeSys() {
         Py_DECREF(py_rhs);
@@ -52,6 +54,8 @@ struct PyOdeSys: public AnyODE::OdeSysIterativeBase<Real_t, Index_t, DenseMatrix
         Py_XDECREF(py_quads);
         Py_XDECREF(py_roots);
         Py_XDECREF(py_kwargs);
+        Py_XDECREF(py_dx0cb);
+        Py_XDECREF(py_dx_max_cb);
         Py_DECREF(real_type_descr);
     }
 
