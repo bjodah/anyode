@@ -27,7 +27,6 @@ def predefined(rhs, double[::1] y0, double[::1] xout, params=None):
 
     for i, yval in enumerate(y0):
         yout[i] = yval
-
     odesys = new MidpointPyOdeSys(ny, <PyObject*>rhs, <PyObject*>params)
 
     try:

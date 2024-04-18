@@ -6,7 +6,7 @@ export CXX=g++
 export CFLAGS="-Werror -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION"
 
 
-for py_vers in '3.11-apt-deb' '3.11.*-debug' '3.12.*-debug' '3.12.*-asan' '3.12.*-release' '3.11.*-asan'; do
+for py_vers in '3.11.*-debug' '3.11-apt-deb' '3.12.*-debug' '3.12.*-asan' '3.12.*-release' '3.11.*-asan'; do
     for dir in midpoint eulerfw; do
         cd tests/$dir
         if [ -d ./build/ ]; then
