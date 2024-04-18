@@ -16,14 +16,14 @@ struct PyOdeSys: public AnyODE::OdeSysIterativeBase<Real_t, Index_t, DenseMatrix
     int mlower, mupper, nquads, nroots;
     Index_t nnz;
     PyArray_Descr * real_type_descr = PyArray_DescrFromType(PyOdeSys::real_type_tag);
-    PyOdeSys(Index_t ny, PyObject * py_rhs, PyObject * py_jac=nullptr, PyObject * py_jtimes=nullptr,
-             PyObject * py_quads=nullptr,
-             PyObject * py_roots=nullptr, PyObject * py_kwargs=nullptr, int mlower=-1,
-             int mupper=-1, int nquads=0, int nroots=0, PyObject * py_dx0cb=nullptr,
-             PyObject * py_dx_max_cb=nullptr, Index_t nnz=-1) :
-        ny(ny), py_rhs(py_rhs), py_jac(py_jac), py_jtimes(py_jtimes),
-        py_quads(py_quads), py_roots(py_roots),
-        py_kwargs(py_kwargs), py_dx0cb(py_dx0cb), py_dx_max_cb(py_dx_max_cb),
+    PyOdeSys(Index_t ny, PyObject * py_rhs_, PyObject * py_jac_=nullptr, PyObject * py_jtimes_=nullptr,
+             PyObject * py_quads_=nullptr,
+             PyObject * py_roots_=nullptr, PyObject * py_kwargs_=nullptr, int mlower=-1,
+             int mupper=-1, int nquads=0, int nroots=0, PyObject * py_dx0cb_=nullptr,
+             PyObject * py_dx_max_cb_=nullptr, Index_t nnz=-1) :
+        ny(ny), py_rhs(py_rhs_), py_jac(py_jac_), py_jtimes(py_jtimes_),
+        py_quads(py_quads_), py_roots(py_roots_),
+        py_kwargs(py_kwargs_), py_dx0cb(py_dx0cb_), py_dx_max_cb(py_dx_max_cb_),
         mlower(mlower), mupper(mupper), nquads(nquads), nroots(nroots),
         nnz(nnz)
     {
@@ -38,12 +38,14 @@ struct PyOdeSys: public AnyODE::OdeSysIterativeBase<Real_t, Index_t, DenseMatrix
         Py_XINCREF(py_jtimes);
         Py_XINCREF(py_quads);
         Py_XINCREF(py_roots);
-        if (py_kwargs == Py_None){
-            //Py_DECREF(Py_None);  <-- we must not decrement Py_None here
-            this->py_kwargs = nullptr;
+        if (py_kwargs == nullptr || py_kwargs == Py_None) {
+            py_kwargs = nullptr;
         } else {
-            Py_XINCREF(py_kwargs);
+            PyDict_Check(py_kwargs);
         }
+        Py_XINCREF(py_kwargs);
+        Py_XINCREF(py_dx0cb);
+        Py_XINCREF(py_dx_max_cb);
     }
     virtual ~PyOdeSys() {
         Py_DECREF(py_rhs);
@@ -52,6 +54,8 @@ struct PyOdeSys: public AnyODE::OdeSysIterativeBase<Real_t, Index_t, DenseMatrix
         Py_XDECREF(py_quads);
         Py_XDECREF(py_roots);
         Py_XDECREF(py_kwargs);
+        Py_XDECREF(py_dx0cb);
+        Py_XDECREF(py_dx_max_cb);
         Py_DECREF(real_type_descr);
     }
 

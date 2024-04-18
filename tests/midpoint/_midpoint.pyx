@@ -17,19 +17,17 @@ cnp.import_array()  # Numpy C-API initialization
 import numpy as np
 import copy
 
-def predefined(rhs, double[::1] y0, double[::1] xout, dict params):
+def predefined(rhs, double[::1] y0, double[::1] xout, params=None):
     cdef:
         midpoint_index ny = y0.shape[y0.ndim-1]
         MidpointPyOdeSys * odesys
         midpoint_real * yout = <midpoint_real *>malloc(xout.size*ny*sizeof(midpoint_real))
         midpoint_real [:, ::1] yout_view
         cnp.npy_intp yout_dims[2]
-    py_kwargs = copy.copy(params)
 
     for i, yval in enumerate(y0):
         yout[i] = yval
-
-    odesys = new MidpointPyOdeSys(ny, <PyObject*>rhs, <PyObject*>py_kwargs)
+    odesys = new MidpointPyOdeSys(ny, <PyObject*>rhs, <PyObject*>params)
 
     try:
         t_wall = solve_predefined(yout, &xout[0], xout.size, odesys)
