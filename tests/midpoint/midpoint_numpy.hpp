@@ -8,8 +8,8 @@ using midpoint_real = double;
 using midpoint_index = long int;
 
 struct MidpointPyOdeSys : public AnyODE::PyOdeSys<midpoint_real, midpoint_index> {
-    MidpointPyOdeSys(midpoint_index nt, PyObject *rhs, PyObject *py_kwargs)
-        : AnyODE::PyOdeSys<midpoint_real, midpoint_index>::PyOdeSys(nt, rhs, nullptr, nullptr, nullptr, nullptr, py_kwargs) {}
+    MidpointPyOdeSys(midpoint_index ny, PyObject *rhs, PyObject *py_kwargs)
+        : AnyODE::PyOdeSys<midpoint_real, midpoint_index>::PyOdeSys(ny, rhs, nullptr, nullptr, nullptr, nullptr, py_kwargs) {}
 };
 
 double solve_predefined(midpoint_real *yout, midpoint_real *tout, midpoint_index nt, MidpointPyOdeSys * odesys) {
