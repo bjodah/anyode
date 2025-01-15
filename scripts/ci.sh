@@ -18,6 +18,7 @@ for py_vers in '3.11.*-release' '3.12-apt-deb' '3.12.*-asan' '3.13.*-asan' '3.13
         else
             PYTHON=$BIN_DIR_PY/python3
         fi
+        git clean -xfd
         $PYTHON -m pip install "setuptools==72.1.0"  # temporary work-around, see https://github.com/pypa/setuptools/issues/4748
         ASAN_OPTIONS=detect_leaks=0 $PYTHON -m pytest -v
         cd -
