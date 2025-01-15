@@ -123,7 +123,7 @@ struct PyOdeSys: public AnyODE::OdeSysIterativeBase<Real_t, Index_t, DenseMatrix
             Py_DECREF(py_result);
             return AnyODE::Status::success;
         }
-        long result = PyInt_AsLong(py_result);
+        long result = PyLong_AsLong(py_result);
         Py_DECREF(py_result);
 
 
