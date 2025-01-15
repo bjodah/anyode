@@ -3,7 +3,7 @@
 export CC=gcc
 export CXX=g++
 export CFLAGS="-Werror -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION"
-
+export ASAN_OPTIONS=detect_leaks=0
 
 for py_vers in '3.11.*-release' '3.12-apt-deb' '3.12.*-asan' '3.13.*-asan' '3.13.*-release'; do  # from triceratops/test-3.sh
     for dir in midpoint eulerfw; do
@@ -20,10 +20,11 @@ for py_vers in '3.11.*-release' '3.12-apt-deb' '3.12.*-asan' '3.13.*-asan' '3.13
         fi
         git clean -xfd
         $PYTHON -m pip install "setuptools==72.1.0"  # temporary work-around, see https://github.com/pypa/setuptools/issues/4748
-        ASAN_OPTIONS=detect_leaks=0 $PYTHON -m pytest -v
+        $PYTHON -m pytest -v
         cd -
     done
 done
+export ASAN_OPTIONS=""
 
 for dir in tests/decomp tests/matrix; do
     cd $dir
