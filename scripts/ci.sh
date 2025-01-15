@@ -1,12 +1,11 @@
 #!/bin/bash -xeu
 
-export PATH=:/opt-2/gcc-13/bin:$PATH
 export CC=gcc
 export CXX=g++
 export CFLAGS="-Werror -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION"
 
 
-for py_vers in '3.11.*-debug' '3.11-apt-deb' '3.12.*-debug' '3.12.*-asan' '3.12.*-release' '3.11.*-asan'; do
+for py_vers in '3.11.*-release' '3.12-apt-deb' '3.12.*-asan' '3.13.*-asan' '3.13.*-release'; do  # from triceratops/test-3.sh
     for dir in midpoint eulerfw; do
         cd tests/$dir
         if [ -d ./build/ ]; then
