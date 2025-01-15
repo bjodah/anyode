@@ -11,7 +11,15 @@ for py_vers in '3.11.*-release' '3.12-apt-deb' '3.12.*-asan' '3.13.*-asan' '3.13
         if [ -d ./build/ ]; then
             rm -r ./build/
         fi
-        ASAN_OPTIONS=detect_leaks=0 $(compgen -G "/opt-3/cpython-v${py_vers}/bin/python3") -m pytest -v
+        BIN_DIR_PY=$(compgen -G "/opt-3/cpython-v${py_vers}/bin")
+        if [ -e $BIN_DIR_PY/activate ]; then
+            source $BIN_DIR_PY/activate
+            PYTHON=python
+        else
+            PYTHON=$BIN_DIR_PY/python3
+        fi
+        $PYTHON -m pip install "setuptools==72.1.0"  # temporary work-around, see https://github.com/pypa/setuptools/issues/4748
+        ASAN_OPTIONS=detect_leaks=0 $PYTHON -m pytest -v
         cd -
     done
 done
