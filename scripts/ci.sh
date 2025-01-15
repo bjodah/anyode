@@ -20,7 +20,7 @@ for py_vers in '3.11.*-release' '3.12-apt-deb' '3.12.*-asan' '3.13.*-asan' '3.13
         fi
         git clean -xfd
         $PYTHON -m pip install "setuptools==72.1.0"  # temporary work-around, see https://github.com/pypa/setuptools/issues/4748
-        $PYTHON -m pytest -v
+        $PYTHON -m pytest -v -s
         cd -
     done
 done
