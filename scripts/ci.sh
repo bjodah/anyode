@@ -1,4 +1,5 @@
-#!/bin/bash -xeu
+#!/bin/bash
+set -xeu
 
 export CFLAGS="-Werror -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION"
 export ASAN_OPTIONS=detect_leaks=0
