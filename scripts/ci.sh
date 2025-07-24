@@ -3,7 +3,7 @@
 export CFLAGS="-Werror -DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION"
 export ASAN_OPTIONS=detect_leaks=0
 
-for py_vers in '3.11.*-release' '3.12-apt-deb' '3.12.*-asan' '3.13.*-asan' '3.13.*-release'; do  # from triceratops/test-3.sh
+for py_vers in '3.11.*-release' '3.12.*-release' '3.13.*-asan' '3.13-apt-deb'; do  # from triceratops/test-3.sh
     if [[ $py_vers == *-asan ]]; then
         export CC=clang
         export CXX=clang++
