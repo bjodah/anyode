@@ -12,36 +12,9 @@
 #include <array>
 #endif
 
-#if ANYODE_NO_LAPACK != 1
-TEST_CASE( "SVD_solve" ) {
-    constexpr int n = 6;
-    constexpr int ld = 8;
-    std::array<double, n*ld> data {{  // column major
-        5,5,1,0,0,0,0,0,
-        3,8,0,2,0,0,0,0,
-        2,0,8,4,3,0,0,0,
-        0,3,4,4,0,4,0,0,
-        0,0,4,0,6,2,0,0,
-        0,0,0,5,9,7,0,0
-    }};
-    bool colmaj = true;
-    AnyODE::DenseMatrix<double> dmv {&data[0], n, n, ld, colmaj};
-    std::array<double, n> xref {{-7, 13, 9, -4, -0.7, 42}};
-    std::array<double, n> x;
-    std::array<double, n> b;
-    dmv.dot_vec(&xref[0], &b[0]);
-    auto decomp = AnyODE::SVD<double>(&dmv);
-    int info = decomp.factorize();
-    REQUIRE( info == 0 );
-    int flag = decomp.solve(&b[0], &x[0]);
-    REQUIRE( flag == 0 );
-    for (int idx=0; idx<n; ++idx){
-        REQUIRE( std::abs((x[idx] - xref[idx])/2e-13) < 1 );
-    }
-    REQUIRE( decomp.m_condition_number < 10.0 );
+#include <cmath>
 
-}
-#endif
+using std::fabs;
 
 TEST_CASE( "DenseLU_solve" ) {
     constexpr int n = 6;
@@ -66,11 +39,66 @@ TEST_CASE( "DenseLU_solve" ) {
     int flag = decomp.solve(&b[0], &x[0]);
     REQUIRE( flag == 0 );
     for (int idx=0; idx<n; ++idx){
-        REQUIRE( std::abs((x[idx] - xref[idx])/2e-13) < 1 );
+        REQUIRE( fabs((x[idx] - xref[idx])/2e-13) < 1 );
     }
 }
 
-#if ANYODE_NO_LAPACK != 1
+#if ANYODE_NO_LAPACK == 1
+TEST_CASE( "DenseLU_solve__long_double" ) {
+    constexpr int n = 6;
+    constexpr int ld = 8;
+    std::array<long double, n*ld> data {{  // column major
+        5,5,1,0,0,0,0,0,
+        3,8,0,2,0,0,0,0,
+        2,0,8,4,3,0,0,0,
+        0,3,4,4,0,4,0,0,
+        0,0,4,0,6,2,0,0,
+        0,0,0,5,9,7,0,0
+    }};
+    bool colmaj = true;
+    AnyODE::DenseMatrix<long double> dmv {&data[0], n, n, ld, colmaj};
+    std::array<long double, n> xref {{-7, 13, 9, -4, -0.7, 42}};
+    std::array<long double, n> x;
+    std::array<long double, n> b;
+    dmv.dot_vec(&xref[0], &b[0]);
+    auto decomp = AnyODE::DenseLU<long double>(&dmv);
+    int info = decomp.factorize();
+    REQUIRE( info == 0 );
+    int flag = decomp.solve(&b[0], &x[0]);
+    REQUIRE( flag == 0 );
+    for (int idx=0; idx<n; ++idx){
+        REQUIRE( fabs((x[idx] - xref[idx])/2e-13) < 1 );
+    }
+}
+#else
+TEST_CASE( "SVD_solve" ) {
+    constexpr int n = 6;
+    constexpr int ld = 8;
+    std::array<double, n*ld> data {{  // column major
+        5,5,1,0,0,0,0,0,
+        3,8,0,2,0,0,0,0,
+        2,0,8,4,3,0,0,0,
+        0,3,4,4,0,4,0,0,
+        0,0,4,0,6,2,0,0,
+        0,0,0,5,9,7,0,0
+    }};
+    bool colmaj = true;
+    AnyODE::DenseMatrix<double> dmv {&data[0], n, n, ld, colmaj};
+    std::array<double, n> xref {{-7, 13, 9, -4, -0.7, 42}};
+    std::array<double, n> x;
+    std::array<double, n> b;
+    dmv.dot_vec(&xref[0], &b[0]);
+    auto decomp = AnyODE::SVD<double>(&dmv);
+    int info = decomp.factorize();
+    REQUIRE( info == 0 );
+    int flag = decomp.solve(&b[0], &x[0]);
+    REQUIRE( flag == 0 );
+    for (int idx=0; idx<n; ++idx){
+        REQUIRE( fabs((x[idx] - xref[idx])/2e-13) < 1 );
+    }
+    REQUIRE( decomp.m_condition_number < 10.0 );
+
+}
 TEST_CASE( "BandedLU_solve" ) {
     constexpr int n = 6;
     constexpr int ld = 8;
@@ -100,7 +128,7 @@ TEST_CASE( "BandedLU_solve" ) {
     std::array<double, n> b;
     bpmv.dot_vec(&xref[0], &b[0]);
     for (int idx=0; idx<n; ++idx){
-        REQUIRE( std::abs((b[idx] - bref[idx])/2e-13) < 1 );
+        REQUIRE( fabs((b[idx] - bref[idx])/2e-13) < 1 );
 
     }
     auto decomp = AnyODE::BandedLU<double>(&bpmv);
@@ -109,7 +137,7 @@ TEST_CASE( "BandedLU_solve" ) {
     int flag = decomp.solve(&b[0], &x[0]);
     REQUIRE( flag == 0 );
     for (int idx=0; idx<n; ++idx){
-        REQUIRE( std::abs((x[idx] - xref[idx])/2e-13) < 1 );
+        REQUIRE( fabs((x[idx] - xref[idx])/2e-13) < 1 );
     }
 }
 #endif
@@ -131,7 +159,7 @@ TEST_CASE( "DiagInv_solve" ) {
     std::array<double, n> b;
     dm.dot_vec(&xref[0], &b[0]);
     for (int idx=0; idx<n; ++idx){
-        REQUIRE( std::abs((b[idx] - bref[idx])/2e-13) < 1 );
+        REQUIRE( fabs((b[idx] - bref[idx])/2e-13) < 1 );
     }
     auto decomp = AnyODE::DiagonalInv<double>(&dm);
     int info = decomp.factorize();
@@ -139,6 +167,6 @@ TEST_CASE( "DiagInv_solve" ) {
     int flag = decomp.solve(&b[0], &x[0]);
     REQUIRE( flag == 0 );
     for (int idx=0; idx<n; ++idx){
-        REQUIRE( std::abs((x[idx] - xref[idx])/2e-13) < 1 );
+        REQUIRE( fabs((x[idx] - xref[idx])/2e-13) < 1 );
     }
 }
