@@ -15,4 +15,3 @@ steps:
       - ANYODE_NO_LAPACK=0
     commands:
       -  bash -l ./scripts/ci.sh
-      
