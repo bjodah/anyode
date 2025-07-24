@@ -31,7 +31,7 @@ TEST_CASE( "DenseLU_solve" ) {
     AnyODE::DenseMatrix<double> dmv {&data[0], n, n, ld, colmaj};
     std::array<double, n> xref {{-7, 13, 9, -4, -0.7, 42}};
     std::array<double, n> x;
-    std::array<double, n> b;
+    std::array<double, n> b {};
     dmv.dot_vec(&xref[0], &b[0]);
     auto decomp = AnyODE::DenseLU<double>(&dmv);
     int info = decomp.factorize();
@@ -47,19 +47,20 @@ TEST_CASE( "DenseLU_solve" ) {
 TEST_CASE( "DenseLU_solve__long_double" ) {
     constexpr int n = 6;
     constexpr int ld = 8;
+    constexpr long double nan = std::numeric_limits<long double>::quiet_NaN();
     std::array<long double, n*ld> data {{  // column major
-        5,5,1,0,0,0,0,0,
-        3,8,0,2,0,0,0,0,
-        2,0,8,4,3,0,0,0,
-        0,3,4,4,0,4,0,0,
-        0,0,4,0,6,2,0,0,
-        0,0,0,5,9,7,0,0
+        5,5,1,0,0,0,nan,nan,
+        3,8,0,2,0,0,nan,nan,
+        2,0,8,4,3,0,nan,nan,
+        0,3,4,4,0,4,nan,nan,
+        0,0,4,0,6,2,nan,nan,
+        0,0,0,5,9,7,nan,nan
     }};
     bool colmaj = true;
     AnyODE::DenseMatrix<long double> dmv {&data[0], n, n, ld, colmaj};
     std::array<long double, n> xref {{-7, 13, 9, -4, -0.7, 42}};
     std::array<long double, n> x;
-    std::array<long double, n> b;
+    std::array<long double, n> b {};  // <- b needs to be zero-initialized
     dmv.dot_vec(&xref[0], &b[0]);
     auto decomp = AnyODE::DenseLU<long double>(&dmv);
     int info = decomp.factorize();
@@ -86,7 +87,7 @@ TEST_CASE( "SVD_solve" ) {
     AnyODE::DenseMatrix<double> dmv {&data[0], n, n, ld, colmaj};
     std::array<double, n> xref {{-7, 13, 9, -4, -0.7, 42}};
     std::array<double, n> x;
-    std::array<double, n> b;
+    std::array<double, n> b {};
     dmv.dot_vec(&xref[0], &b[0]);
     auto decomp = AnyODE::SVD<double>(&dmv);
     int info = decomp.factorize();
@@ -125,11 +126,10 @@ TEST_CASE( "BandedLU_solve" ) {
     std::array<double, n> xref {{-7, 13, 9, -4, -0.7, 42}};
     std::array<double, n> bref {{22, 57, 46.2, 256, 400.8, 276.6}};
     std::array<double, n> x;
-    std::array<double, n> b;
+    std::array<double, n> b {};
     bpmv.dot_vec(&xref[0], &b[0]);
     for (int idx=0; idx<n; ++idx){
         REQUIRE( fabs((b[idx] - bref[idx])/2e-13) < 1 );
-
     }
     auto decomp = AnyODE::BandedLU<double>(&bpmv);
     int info = decomp.factorize();
@@ -156,7 +156,7 @@ TEST_CASE( "DiagInv_solve" ) {
     std::array<double, n> xref {{-7, 13, 9, -4, -0.7, 42}};
     std::array<double, n> bref {{-14. ,   52. ,   72. ,  -20. ,   -4.9,  546.}};
     std::array<double, n> x;
-    std::array<double, n> b;
+    std::array<double, n> b {};
     dm.dot_vec(&xref[0], &b[0]);
     for (int idx=0; idx<n; ++idx){
         REQUIRE( fabs((b[idx] - bref[idx])/2e-13) < 1 );
